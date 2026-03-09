@@ -1,0 +1,20 @@
+{
+  "room": "Markthalle",
+  "displayName": "Die Markthalle",
+  "description": "The market hall of Æsethien — food, quantities, prices",
+  "session": 3,
+  "words": [
+    { "id": 1,  "word": "Apfel",    "article": "der", "plural": "Äpfel",    "en": "apple",   "ipa": "ˈʔapfl̩",   "emoji": "🍎", "iconFile": "apple.svg",   "audio": "De-Apfel.ogg" },
+    { "id": 2,  "word": "Brot",     "article": "das", "plural": "Brote",    "en": "bread",   "ipa": "bʁoːt",    "emoji": "🍞", "iconFile": "bread.svg",   "audio": "De-Brot.ogg" },
+    { "id": 3,  "word": "Milch",    "article": "die", "plural": "—",        "en": "milk",    "ipa": "mɪlç",     "emoji": "🥛", "iconFile": "milk.svg",    "audio": "De-Milch.ogg" },
+    { "id": 4,  "word": "Käse",     "article": "der", "plural": "Käse",     "en": "cheese",  "ipa": "ˈkɛːzə",   "emoji": "🧀", "iconFile": "cheese.svg",  "audio": "De-Kaese.ogg" },
+    { "id": 5,  "word": "Ei",       "article": "das", "plural": "Eier",     "en": "egg",     "ipa": "ʔaɪ̯",     "emoji": "🥚", "iconFile": "egg.svg",     "audio": "De-Ei.ogg" },
+    { "id": 6,  "word": "Karotte",  "article": "die", "plural": "Karotten", "en": "carrot",  "ipa": "kaˈʁɔtə",  "emoji": "🥕", "iconFile": "carrot.svg",  "audio": "De-Karotte.ogg" },
+    { "id": 7,  "word": "Fisch",    "article": "der", "plural": "Fische",   "en": "fish",    "ipa": "fɪʃ",      "emoji": "🐟", "iconFile": "fish.svg",    "audio": "De-Fisch.ogg" },
+    { "id": 8,  "word": "Wasser",   "article": "das", "plural": "Wässer",   "en": "water",   "ipa": "ˈvasɐ",    "emoji": "💧", "iconFile": "water.svg",   "audio": "De-Wasser.ogg" },
+    { "id": 9,  "word": "Tomate",   "article": "die", "plural": "Tomaten",  "en": "tomato",  "ipa": "toˈmaːtə", "emoji": "🍅", "iconFile": "tomato.svg",  "audio": "De-Tomate.ogg" },
+    { "id": 10, "word": "Zucker",   "article": "der", "plural": "—",        "en": "sugar",   "ipa": "ˈtsʊkɐ",   "emoji": "🍬", "iconFile": "sugar.svg",   "audio": "De-Zucker.ogg" },
+    { "id": 11, "word": "Fleisch",  "article": "das", "plural": "—",        "en": "meat",    "ipa": "flaɪ̯ʃ",   "emoji": "🥩", "iconFile": "meat.svg",    "audio": "De-Fleisch.ogg" },
+    { "id": 12, "word": "Zwiebel",  "article": "die", "plural": "Zwiebeln", "en": "onion",   "ipa": "ˈtsviːbl̩", "emoji": "🧅", "iconFile": "onion.svg",   "audio": "De-Zwiebel.ogg" }
+  ]
+}

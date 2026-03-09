@@ -1,0 +1,16 @@
+{
+  "room": "Depot",
+  "displayName": "Das Depot",
+  "description": "The depot of Æsethien — objects, tools, furniture",
+  "session": 9,
+  "words": [
+    { "id": 1, "word": "Schlüssel", "article": "der", "plural": "Schlüssel",  "en": "key",    "ipa": "ˈʃlʏsl̩",  "emoji": "🔑", "iconFile": "key.svg",     "audio": "De-Schluessel.ogg" },
+    { "id": 2, "word": "Kiste",     "article": "die", "plural": "Kisten",     "en": "crate",  "ipa": "ˈkɪstə",   "emoji": "📦", "iconFile": "box.svg",     "audio": "De-Kiste.ogg" },
+    { "id": 3, "word": "Regal",     "article": "das", "plural": "Regale",     "en": "shelf",  "ipa": "ʁeˈɡaːl",  "emoji": "🗄️", "iconFile": "shelf.svg",   "audio": "De-Regal.ogg" },
+    { "id": 4, "word": "Hammer",    "article": "der", "plural": "Hämmer",     "en": "hammer", "ipa": "ˈhamɐ",    "emoji": "🔨", "iconFile": "hammer.svg",  "audio": "De-Hammer.ogg" },
+    { "id": 5, "word": "Lampe",     "article": "die", "plural": "Lampen",     "en": "lamp",   "ipa": "ˈlampə",   "emoji": "💡", "iconFile": "lamp.svg",    "audio": "De-Lampe.ogg" },
+    { "id": 6, "word": "Fenster",   "article": "das", "plural": "Fenster",    "en": "window", "ipa": "ˈfɛnstɐ",  "emoji": "🪟", "iconFile": "window.svg",  "audio": "De-Fenster.ogg" },
+    { "id": 7, "word": "Stuhl",     "article": "der", "plural": "Stühle",     "en": "chair",  "ipa": "ʃtuːl",    "emoji": "🪑", "iconFile": "chair.svg",   "audio": "De-Stuhl.ogg" },
+    { "id": 8, "word": "Tür",       "article": "die", "plural": "Türen",      "en": "door",   "ipa": "tyːɐ̯",    "emoji": "🚪", "iconFile": "door.svg",    "audio": "De-Tuer.ogg" }
+  ]
+}

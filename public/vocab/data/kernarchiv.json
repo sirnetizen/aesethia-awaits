@@ -1,0 +1,14 @@
+{
+  "room": "Kernarchiv",
+  "displayName": "Das Kernarchiv",
+  "description": "The core archive of Æsethien — documents, time, reading",
+  "session": 5,
+  "words": [
+    { "id": 1, "word": "Buch",   "article": "das", "plural": "Bücher",  "en": "book",         "ipa": "buːx",     "emoji": "📚", "iconFile": "book.svg",    "audio": "De-Buch.ogg" },
+    { "id": 2, "word": "Stift",  "article": "der", "plural": "Stifte",  "en": "pen",          "ipa": "ʃtɪft",    "emoji": "✏️", "iconFile": "pen.svg",     "audio": "De-Stift.ogg" },
+    { "id": 3, "word": "Karte",  "article": "die", "plural": "Karten",  "en": "map / card",   "ipa": "ˈkaʁtə",   "emoji": "🗺️", "iconFile": "map.svg",     "audio": "De-Karte.ogg" },
+    { "id": 4, "word": "Papier", "article": "das", "plural": "Papiere", "en": "paper",        "ipa": "paˈpiːɐ̯", "emoji": "📄", "iconFile": "paper.svg",   "audio": "De-Papier.ogg" },
+    { "id": 5, "word": "Tisch",  "article": "der", "plural": "Tische",  "en": "table",        "ipa": "tɪʃ",      "emoji": "🪵", "iconFile": "table.svg",   "audio": "De-Tisch.ogg" },
+    { "id": 6, "word": "Uhr",    "article": "die", "plural": "Uhren",   "en": "clock / watch","ipa": "ʔuːɐ̯",    "emoji": "🕐", "iconFile": "clock.svg",   "audio": "De-Uhr.ogg" }
+  ]
+}

@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Æsethien — Die Markthalle</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --deep:    #0e0a05;
+  --deep2:   #1a1208;
+  --bern:    #C8860A;
+  --bern2:   #F0A820;
+  --moss:    #4A7C6F;
+  --bark:    #6B5344;
+  --cream:   #F2F0EB;
+  --green:   #8BA888;
+  --mid:     #DDD9D3;
+  --r:       6px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--deep);font-family:'DM Sans',sans-serif;color:var(--cream);overflow-x:hidden;min-height:100vh}
+
+/* ── TOP BAR ── */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(14,10,5,.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(200,134,10,.2);
+  padding:12px 32px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.topbar__title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--cream)}
+.topbar__title span{color:var(--bern)}
+.topbar__room{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--moss)}
+.topbar__progress{display:flex;align-items:center;gap:12px}
+.topbar__count{font-size:12px;color:rgba(242,240,235,.5)}
+.quiz-btn{
+  padding:8px 18px;border-radius:var(--r);
+  background:var(--bern);color:white;
+  border:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+  cursor:pointer;transition:.2s;letter-spacing:.04em;
+}
+.quiz-btn:hover{background:#a06a08}
+.quiz-btn:disabled{background:rgba(200,134,10,.3);cursor:default}
+
+/* ── ROOM ── */
+.room{
+  margin-top:62px;
+  position:relative;
+  width:100%;
+  min-height:calc(100vh - 62px);
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 30%, rgba(200,134,10,.12) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 80% 70%, rgba(74,124,111,.10) 0%, transparent 60%),
+    linear-gradient(160deg, #1a1208 0%, #0e0a05 50%, #0d110e 100%);
+  overflow:hidden;
+}
+
+/* Atmospheric floor line */
+.room::after{
+  content:'';position:absolute;bottom:180px;left:0;right:0;
+  height:1px;background:linear-gradient(90deg,transparent,rgba(200,134,10,.15),rgba(200,134,10,.15),transparent);
+}
+
+/* Room name watermark */
+.room__name{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:'DM Serif Display',serif;font-size:120px;
+  color:rgba(242,240,235,.02);pointer-events:none;white-space:nowrap;
+  user-select:none;letter-spacing:.05em;
+}
+
+/* ── WORD OBJECT ── */
+.word-obj{
+  position:absolute;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  cursor:pointer;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1);
+  z-index:10;
+}
+.word-obj:hover{transform:translateY(-6px) scale(1.06)}
+.word-obj:hover .word-obj__label{opacity:1;transform:translateY(0)}
+
+.word-obj__icon{
+  width:80px;height:80px;
+  background:rgba(242,240,235,.06);
+  border:1.5px solid rgba(242,240,235,.12);
+  border-radius:16px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:40px;
+  transition:.25s;
+  position:relative;
+  overflow:hidden;
+}
+.word-obj__icon::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 40% 35%, rgba(255,255,255,.08), transparent 60%);
+}
+.word-obj:hover .word-obj__icon{
+  background:rgba(200,134,10,.12);
+  border-color:rgba(200,134,10,.4);
+  box-shadow:0 0 24px rgba(200,134,10,.15);
+}
+.word-obj__icon img{width:48px;height:48px;filter:invert(1) opacity(.7)}
+.word-obj:hover .word-obj__icon img{filter:invert(1) opacity(1)}
+
+.word-obj__label{
+  background:rgba(14,10,5,.85);
+  border:1px solid rgba(200,134,10,.3);
+  border-radius:20px;padding:4px 12px;
+  font-size:13px;font-weight:600;color:var(--cream);
+  opacity:0;transform:translateY(4px);
+  transition:.2s;white-space:nowrap;
+  backdrop-filter:blur(4px);
+}
+.word-obj__article{
+  position:absolute;top:-8px;right:-8px;
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;letter-spacing:.02em;
+  border:2px solid rgba(14,10,5,.8);
+}
+.art-der{background:#4A7C6F;color:white}   /* moss — masculine */
+.art-die{background:#C8860A;color:white}   /* bern — feminine */
+.art-das{background:#6B5344;color:white}   /* bark — neuter */
+
+.word-obj.discovered .word-obj__icon{
+  border-color:rgba(138,168,136,.4);
+  background:rgba(74,124,111,.1);
+}
+
+/* ── POPUP CARD ── */
+.overlay{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(14,10,5,.75);backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:.3s;
+}
+.overlay.active{opacity:1;pointer-events:all}
+
+.card{
+  background:linear-gradient(145deg, #1e140a, #111a13);
+  border:1px solid rgba(200,134,10,.25);
+  border-radius:20px;padding:36px;
+  width:min(460px, 90vw);
+  position:relative;
+  transform:translateY(16px) scale(.97);
+  transition:.3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 32px 80px rgba(0,0,0,.6);
+}
+.overlay.active .card{transform:translateY(0) scale(1)}
+
+.card__close{
+  position:absolute;top:16px;right:16px;
+  width:32px;height:32px;border-radius:50%;
+  background:rgba(242,240,235,.08);border:1px solid rgba(242,240,235,.12);
+  color:var(--cream);font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:.2s;
+}
+.card__close:hover{background:rgba(242,240,235,.15)}
+
+.card__icon{
+  width:100px;height:100px;border-radius:18px;
+  background:rgba(200,134,10,.08);border:1px solid rgba(200,134,10,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:54px;margin:0 auto 20px;
+}
+.card__icon img{width:60px;height:60px;filter:invert(1) opacity(.8)}
+
+.card__article-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 14px;border-radius:20px;margin-bottom:8px;
+  font-size:13px;font-weight:700;letter-spacing:.06em;
+}
+.card__article-badge.der{background:rgba(74,124,111,.2);border:1px solid rgba(74,124,111,.4);color:#8BA888}
+.card__article-badge.die{background:rgba(200,134,10,.15);border:1px solid rgba(200,134,10,.35);color:var(--bern2)}
+.card__article-badge.das{background:rgba(107,83,68,.2);border:1px solid rgba(107,83,68,.4);color:#C4A882}
+
+.card__word{
+  font-family:'DM Serif Display',serif;font-size:42px;color:var(--cream);
+  line-height:1;margin-bottom:4px;
+}
+.card__plural{font-size:13px;color:rgba(242,240,235,.45);margin-bottom:16px}
+.card__english{font-size:20px;color:var(--green);font-weight:500;margin-bottom:16px}
+
+.card__ipa{
+  display:inline-flex;align-items:center;gap:10px;
+  background:rgba(242,240,235,.05);border:1px solid rgba(242,240,235,.1);
+  border-radius:30px;padding:8px 16px;margin-bottom:20px;
+}
+.card__ipa-text{font-size:14px;color:rgba(242,240,235,.6);font-family:monospace}
+.audio-btn{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--bern);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:13px;transition:.2s;flex-shrink:0;
+}
+.audio-btn:hover{background:var(--bern2);transform:scale(1.1)}
+.audio-btn:disabled{background:rgba(200,134,10,.3);cursor:default}
+
+.card__divider{height:1px;background:rgba(242,240,235,.08);margin:16px 0}
+
+.card__footer{
+  display:flex;align-items:center;justify-content:space-between;
+}
+.card__article-legend{display:flex;gap:12px}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:11px;color:rgba(242,240,235,.4)}
+.legend-dot{width:8px;height:8px;border-radius:50%}
+
+.mark-btn{
+  padding:8px 18px;border-radius:var(--r);
+  background:rgba(74,124,111,.15);border:1px solid rgba(74,124,111,.3);
+  color:var(--green);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+  cursor:pointer;transition:.2s;
+}
+.mark-btn:hover{background:rgba(74,124,111,.3)}
+.mark-btn.marked{background:rgba(74,124,111,.25);border-color:var(--moss)}
+
+/* ── QUIZ PANEL ── */
+.quiz-overlay{
+  position:fixed;inset:0;z-index:300;
+  background:rgba(14,10,5,.9);backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:.3s;
+}
+.quiz-overlay.active{opacity:1;pointer-events:all}
+
+.quiz{
+  background:linear-gradient(145deg,#1e140a,#111a13);
+  border:1px solid rgba(200,134,10,.25);
+  border-radius:24px;padding:40px;
+  width:min(520px,92vw);max-height:90vh;overflow-y:auto;
+  transform:translateY(20px);transition:.35s cubic-bezier(.34,1.56,.64,1);
+}
+.quiz-overlay.active .quiz{transform:translateY(0)}
+
+.quiz__header{text-align:center;margin-bottom:32px}
+.quiz__title{font-family:'DM Serif Display',serif;font-size:28px;margin-bottom:6px}
+.quiz__subtitle{font-size:13px;color:rgba(242,240,235,.45)}
+
+.q-block{margin-bottom:28px}
+.q-block__prompt{
+  font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--bern);margin-bottom:10px;
+}
+.q-block__word{
+  font-family:'DM Serif Display',serif;font-size:32px;color:var(--cream);
+  margin-bottom:14px;
+}
+.q-choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.q-choice{
+  padding:12px 16px;border-radius:10px;
+  background:rgba(242,240,235,.05);border:1.5px solid rgba(242,240,235,.1);
+  color:var(--cream);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;
+  cursor:pointer;transition:.2s;text-align:left;
+}
+.q-choice:hover:not(:disabled){background:rgba(200,134,10,.1);border-color:rgba(200,134,10,.3)}
+.q-choice.correct{background:rgba(74,124,111,.25);border-color:var(--moss);color:#8BA888}
+.q-choice.wrong{background:rgba(180,60,60,.15);border-color:rgba(180,60,60,.4);color:#e88}
+.q-choice:disabled{cursor:default}
+
+.quiz__score{
+  text-align:center;padding:24px;
+  background:rgba(200,134,10,.08);border:1px solid rgba(200,134,10,.2);
+  border-radius:14px;margin-top:24px;display:none;
+}
+.quiz__score-num{font-family:'DM Serif Display',serif;font-size:52px;color:var(--bern)}
+.quiz__score-label{font-size:13px;color:rgba(242,240,235,.5);margin-top:4px}
+.quiz__score-msg{font-size:15px;color:var(--green);margin-top:10px;font-weight:500}
+
+.quiz__actions{display:flex;gap:12px;justify-content:center;margin-top:24px}
+.btn-outline{
+  padding:10px 22px;border-radius:var(--r);
+  background:transparent;border:1.5px solid rgba(242,240,235,.2);
+  color:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:.2s;
+}
+.btn-outline:hover{background:rgba(242,240,235,.06)}
+
+/* ── PROGRESS DOTS ── */
+.progress-bar{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  z-index:50;display:flex;gap:8px;align-items:center;
+  background:rgba(14,10,5,.8);backdrop-filter:blur(8px);
+  border:1px solid rgba(242,240,235,.08);border-radius:30px;padding:10px 18px;
+}
+.p-dot{
+  width:10px;height:10px;border-radius:50%;
+  background:rgba(242,240,235,.15);transition:.3s;cursor:pointer;
+}
+.p-dot.discovered{background:var(--moss)}
+.p-dot.active{background:var(--bern);transform:scale(1.3)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="topbar__title">Æ<span>sethien</span></div>
+    <div class="topbar__room" id="roomLabel">Die Markthalle</div>
+  </div>
+  <div class="topbar__progress">
+    <div class="topbar__count" id="countLabel">0 / 12 entdeckt</div>
+    <button class="quiz-btn" id="quizBtn" onclick="openQuiz()">Quiz starten →</button>
+  </div>
+</div>
+
+<div class="room" id="room">
+  <div class="room__name" id="roomWatermark">Markthalle</div>
+  <!-- word objects injected by JS -->
+</div>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- POPUP CARD -->
+<div class="overlay" id="overlay" onclick="closeCard(event)">
+  <div class="card" id="card">
+    <button class="card__close" onclick="closeCard()">×</button>
+    <div class="card__icon" id="cardIcon">🍎</div>
+    <div id="cardArticleBadge" class="card__article-badge der">der</div>
+    <div class="card__word" id="cardWord">Apfel</div>
+    <div class="card__plural" id="cardPlural">Pl: Äpfel</div>
+    <div class="card__english" id="cardEnglish">apple</div>
+    <div class="card__ipa">
+      <button class="audio-btn" id="audioBtn" onclick="playAudio()">▶</button>
+      <span class="card__ipa-text" id="cardIPA">/ˈʔapfl̩/</span>
+    </div>
+    <div class="card__divider"></div>
+    <div class="card__footer">
+      <div class="card__article-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#4A7C6F"></div>der (m)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#C8860A"></div>die (f)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#6B5344"></div>das (n)</div>
+      </div>
+      <button class="mark-btn" id="markBtn" onclick="markDiscovered()">✓ Gelernt</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="quiz-overlay" id="quizOverlay">
+  <div class="quiz">
+    <div class="quiz__header">
+      <div class="quiz__title">Wortschatz-Quiz</div>
+      <div class="quiz__subtitle" id="quizSubtitle">Markthalle — teste dein Wissen</div>
+    </div>
+    <div id="quizQuestions"></div>
+    <div class="quiz__score" id="quizScore">
+      <div class="quiz__score-num" id="scoreNum">10/12</div>
+      <div class="quiz__score-label">Antworten richtig</div>
+      <div class="quiz__score-msg" id="scoreMsg"></div>
+    </div>
+    <div class="quiz__actions">
+      <button class="btn-outline" onclick="closeQuiz()">Zurück zur Markthalle</button>
+      <button class="quiz-btn" onclick="restartQuiz()">Nochmal versuchen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── VOCABULARY DATA ───────────────────────────────────────────────────────────
+// Loaded dynamically from /vocab/data/{room}.json
+// Sharon edits the spreadsheet → runs enrich.py → JSON updates → push to GitHub
+
+// ── LAYOUT — scattered positions in the room ──────────────────────────────────
+const POSITIONS = [
+  {left:"8%",  top:"20%"}, {left:"22%", top:"55%"}, {left:"38%", top:"18%"},
+  {left:"52%", top:"48%"}, {left:"65%", top:"22%"}, {left:"78%", top:"52%"},
+  {left:"15%", top:"72%"}, {left:"45%", top:"68%"}, {left:"70%", top:"70%"},
+  {left:"30%", top:"38%"}, {left:"58%", top:"35%"}, {left:"85%", top:"30%"},
+  {left:"55%", top:"58%"}, {left:"90%", top:"50%"}, {left:"5%",  top:"50%"},
+  {left:"42%", top:"80%"}, {left:"72%", top:"15%"}, {left:"25%", top:"28%"},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+// Room is set via URL param: room.html?room=Markthalle
+const params      = new URLSearchParams(window.location.search);
+const currentRoom = params.get("room") || "Markthalle";
+const BASE_URL    = window.location.pathname.replace("room.html","");
+let   roomData    = null;
+const discovered  = new Set();
+let   activeWord  = null;
+let   currentAudioUrl = null;
+
+// ── LOAD DATA THEN BUILD ──────────────────────────────────────────────────────
+async function init() {
+  try {
+    const res = await fetch(`${BASE_URL}data/${currentRoom.toLowerCase()}.json`);
+    if (!res.ok) throw new Error("Room data not found");
+    roomData = await res.json();
+  } catch(e) {
+    // Fallback: embedded Markthalle data for local dev without a server
+    roomData = {
+      room: "Markthalle", displayName: "Die Markthalle",
+      words: [
+        { id:1,  word:"Apfel",   article:"der", plural:"Äpfel",    en:"apple",  ipa:"ˈʔapfl̩",  emoji:"🍎", iconFile:"", audio:"" },
+        { id:2,  word:"Brot",    article:"das", plural:"Brote",    en:"bread",  ipa:"bʁoːt",   emoji:"🍞", iconFile:"", audio:"" },
+        { id:3,  word:"Milch",   article:"die", plural:"—",        en:"milk",   ipa:"mɪlç",    emoji:"🥛", iconFile:"", audio:"" },
+        { id:4,  word:"Käse",    article:"der", plural:"Käse",     en:"cheese", ipa:"ˈkɛːzə",  emoji:"🧀", iconFile:"", audio:"" },
+        { id:5,  word:"Ei",      article:"das", plural:"Eier",     en:"egg",    ipa:"ʔaɪ̯",     emoji:"🥚", iconFile:"", audio:"" },
+        { id:6,  word:"Karotte", article:"die", plural:"Karotten", en:"carrot", ipa:"kaˈʁɔtə", emoji:"🥕", iconFile:"", audio:"" },
+        { id:7,  word:"Fisch",   article:"der", plural:"Fische",   en:"fish",   ipa:"fɪʃ",     emoji:"🐟", iconFile:"", audio:"" },
+        { id:8,  word:"Wasser",  article:"das", plural:"Wässer",   en:"water",  ipa:"ˈvasɐ",   emoji:"💧", iconFile:"", audio:"" },
+        { id:9,  word:"Tomate",  article:"die", plural:"Tomaten",  en:"tomato", ipa:"toˈmaːtə",emoji:"🍅", iconFile:"", audio:"" },
+        { id:10, word:"Zucker",  article:"der", plural:"—",        en:"sugar",  ipa:"ˈtsʊkɐ",  emoji:"🍬", iconFile:"", audio:"" },
+        { id:11, word:"Fleisch", article:"das", plural:"—",        en:"meat",   ipa:"flaɪ̯ʃ",  emoji:"🥩", iconFile:"", audio:"" },
+        { id:12, word:"Zwiebel", article:"die", plural:"Zwiebeln", en:"onion",  ipa:"ˈtsviːbl̩",emoji:"🧅", iconFile:"", audio:"" },
+      ]
+    };
+  }
+  buildRoom();
+}
+
+// ── BUILD ROOM ────────────────────────────────────────────────────────────────
+function buildRoom() {
+  const room = document.getElementById("room");
+  const bar  = document.getElementById("progressBar");
+  const data = roomData;
+
+  document.getElementById("roomLabel").textContent     = data.displayName || data.name;
+  document.getElementById("roomWatermark").textContent = data.room || currentRoom;
+  document.title = `Æsethien — ${data.displayName || data.name}`;
+
+  data.words.forEach((w, i) => {
+    const pos = POSITIONS[i] || { left: (10 + Math.random()*80)+'%', top: (15 + Math.random()*60)+'%' };
+
+    // Room object
+    const obj = document.createElement("div");
+    obj.className = "word-obj";
+    obj.id = `obj-${w.id}`;
+    obj.style.left = pos.left;
+    obj.style.top  = pos.top;
+    obj.onclick = () => openCard(w);
+
+    const artClass = { der:"art-der", die:"art-die", das:"art-das" }[w.article];
+
+    const iconHtml = w.iconFile
+      ? `<img src="${BASE_URL}../icons/${w.iconFile}" alt="${w.word}" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span style="font-size:40px;display:none">${w.emoji}</span>`
+      : `<span style="font-size:40px">${w.emoji}</span>`;
+
+    obj.innerHTML = `
+      <div class="word-obj__icon">
+        ${iconHtml}
+        <div class="word-obj__article ${artClass}">${w.article.replace("der","m").replace("die","f").replace("das","n")}</div>
+      </div>
+      <div class="word-obj__label">${w.article} ${w.word}</div>
+    `;
+    room.appendChild(obj);
+
+    // Progress dot
+    const dot = document.createElement("div");
+    dot.className = "p-dot";
+    dot.id = `dot-${w.id}`;
+    dot.title = w.word;
+    dot.onclick = () => openCard(w);
+    bar.appendChild(dot);
+  });
+
+  updateCount();
+}
+
+// ── CARD ──────────────────────────────────────────────────────────────────────
+function openCard(w) {
+  activeWord = w;
+  const artClass = { der:"der", die:"die", das:"das" }[w.article];
+
+  const iconHtml = w.iconFile
+    ? `<img src="${BASE_URL}../icons/${w.iconFile}" alt="${w.word}" style="width:60px;height:60px;filter:invert(1) opacity(.8)" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\\'font-size:54px\\'>${w.emoji}</span>')">`
+    : `<span style="font-size:54px">${w.emoji}</span>`;
+  document.getElementById("cardIcon").innerHTML = iconHtml;
+  document.getElementById("cardWord").textContent    = w.word;
+  document.getElementById("cardPlural").textContent  = w.plural === "—" ? "kein Plural" : `Pl: ${w.plural}`;
+  document.getElementById("cardEnglish").textContent = w.en;
+  document.getElementById("cardIPA").textContent     = `/${w.ipa}/`;
+
+  const badge = document.getElementById("cardArticleBadge");
+  badge.className = `card__article-badge ${artClass}`;
+  badge.textContent = w.article;
+
+  const audioBtn = document.getElementById("audioBtn");
+  if (w.audio) {
+    audioBtn.disabled = false;
+    currentAudioUrl = `${BASE_URL}../audio/${w.audio}`;
+  } else {
+    audioBtn.disabled = false;
+    currentAudioUrl = `https://commons.wikimedia.org/wiki/Special:FilePath/De-${w.word}.ogg`;
+  }
+
+  const markBtn = document.getElementById("markBtn");
+  markBtn.className = discovered.has(w.id) ? "mark-btn marked" : "mark-btn";
+  markBtn.textContent = discovered.has(w.id) ? "✓ Gelernt" : "Als gelernt markieren";
+
+  document.getElementById("overlay").classList.add("active");
+}
+
+function closeCard(e) {
+  if (e && e.target !== document.getElementById("overlay")) return;
+  document.getElementById("overlay").classList.remove("active");
+  activeWord = null;
+}
+
+function playAudio() {
+  if (!currentAudioUrl) return;
+  const audio = new Audio(currentAudioUrl);
+  audio.play().catch(() => {
+    // Wiktionary audio fallback — try Web Speech API
+    if ('speechSynthesis' in window) {
+      const u = new SpeechSynthesisUtterance(activeWord.word);
+      u.lang = 'de-DE'; u.rate = 0.85;
+      speechSynthesis.speak(u);
+    }
+  });
+}
+
+function markDiscovered() {
+  if (!activeWord) return;
+  discovered.add(activeWord.id);
+  document.getElementById(`obj-${activeWord.id}`).classList.add("discovered");
+  document.getElementById(`dot-${activeWord.id}`).classList.add("discovered");
+  document.getElementById("markBtn").className = "mark-btn marked";
+  document.getElementById("markBtn").textContent = "✓ Gelernt";
+  updateCount();
+}
+
+function updateCount() {
+  const total = ROOMS[currentRoom].words.length;
+  const done  = discovered.size;
+  document.getElementById("countLabel").textContent = `${done} / ${total} entdeckt`;
+  document.getElementById("quizBtn").disabled = done < 3;
+}
+
+// ── QUIZ ──────────────────────────────────────────────────────────────────────
+let quizData = [];
+let quizAnswers = {};
+let quizSubmitted = false;
+
+function openQuiz() {
+  const words = ROOMS[currentRoom].words;
+  // Build 6 questions: 3 article, 2 meaning, 1 plural
+  quizData = buildQuizQuestions(words);
+  quizAnswers = {};
+  quizSubmitted = false;
+  renderQuiz();
+  document.getElementById("quizScore").style.display = "none";
+  document.getElementById("quizOverlay").classList.add("active");
+}
+
+function closeQuiz() {
+  document.getElementById("quizOverlay").classList.remove("active");
+}
+
+function buildQuizQuestions(words) {
+  const shuffled = [...words].sort(() => Math.random() - .5);
+  const questions = [];
+
+  shuffled.slice(0, 4).forEach(w => {
+    const articles = ["der","die","das"];
+    const wrongs = articles.filter(a => a !== w.article);
+    const opts = shuffle([w.article, wrongs[0], wrongs[1]]);
+    questions.push({
+      type: "article",
+      prompt: "Was ist der richtige Artikel?",
+      display: w.word,
+      emoji: w.emoji,
+      correct: w.article,
+      options: opts,
+      wordId: w.id,
+    });
+  });
+
+  shuffled.slice(4, 7).forEach(w => {
+    const allEn = words.map(x => x.en).filter(e => e !== w.en);
+    const wrongs = shuffle(allEn).slice(0,3);
+    const opts = shuffle([w.en, ...wrongs]);
+    questions.push({
+      type: "meaning",
+      prompt: "Was bedeutet das Wort?",
+      display: `${w.article} ${w.word}`,
+      emoji: w.emoji,
+      correct: w.en,
+      options: opts.slice(0,4),
+      wordId: w.id,
+    });
+  });
+
+  return shuffle(questions);
+}
+
+function shuffle(arr) { return [...arr].sort(() => Math.random() - .5) }
+
+function renderQuiz() {
+  const container = document.getElementById("quizQuestions");
+  container.innerHTML = "";
+  quizData.forEach((q, qi) => {
+    const block = document.createElement("div");
+    block.className = "q-block";
+    block.innerHTML = `
+      <div class="q-block__prompt">${q.prompt}</div>
+      <div class="q-block__word">${q.emoji} ${q.display}</div>
+      <div class="q-choices" id="choices-${qi}">
+        ${q.options.map(opt => `
+          <button class="q-choice" onclick="selectAnswer(${qi}, '${opt}', this)">${opt}</button>
+        `).join("")}
+      </div>
+    `;
+    container.appendChild(block);
+  });
+}
+
+function selectAnswer(qi, answer, btn) {
+  if (quizSubmitted) return;
+  quizAnswers[qi] = answer;
+
+  // Visual feedback
+  const q = quizData[qi];
+  const choicesEl = document.getElementById(`choices-${qi}`);
+  choicesEl.querySelectorAll(".q-choice").forEach(b => {
+    b.disabled = true;
+    if (b.textContent.trim() === q.correct) b.classList.add("correct");
+    else if (b === btn && answer !== q.correct) b.classList.add("wrong");
+  });
+
+  // Mark word as discovered if correct
+  if (answer === q.correct) {
+    discovered.add(q.wordId);
+    document.getElementById(`obj-${q.wordId}`)?.classList.add("discovered");
+    document.getElementById(`dot-${q.wordId}`)?.classList.add("discovered");
+  }
+
+  // Check if all answered
+  if (Object.keys(quizAnswers).length === quizData.length) {
+    showScore();
+  }
+}
+
+function showScore() {
+  quizSubmitted = true;
+  const correct = quizData.filter((q,i) => quizAnswers[i] === q.correct).length;
+  const total   = quizData.length;
+  const pct     = correct / total;
+
+  document.getElementById("scoreNum").textContent  = `${correct}/${total}`;
+  document.getElementById("scoreMsg").textContent  =
+    pct >= .85 ? "Ausgezeichnet! Du kennst diese Wörter sehr gut." :
+    pct >= .6  ? "Gut gemacht! Noch ein bisschen Übung und du hast es." :
+                 "Kein Problem — jeder Versuch ist Fortschritt. Versuche es nochmal!";
+  document.getElementById("quizScore").style.display = "block";
+
+  updateCount();
+}
+
+function restartQuiz() {
+  quizData = buildQuizQuestions(ROOMS[currentRoom].words);
+  quizAnswers = {};
+  quizSubmitted = false;
+  document.getElementById("quizScore").style.display = "none";
+  renderQuiz();
+}
+
+// ── WIKTIONARY ENRICHMENT (live fetch) ───────────────────────────────────────
+// In production the pipeline pre-fetches and bakes this into JSON.
+// This live fetch is for demo / development only.
+async function fetchWiktionary(word) {
+  try {
+    const url = `https://en.wiktionary.org/w/api.php?action=parse&page=${word}&prop=wikitext&format=json&origin=*`;
+    const res = await fetch(url);
+    const json = await res.json();
+    // parse wikitext for article, IPA etc — simplified version
+    const wikitext = json?.parse?.wikitext?.["*"] || "";
+    const ipaMatch = wikitext.match(/IPA[^|]*\|([^|}]+)/);
+    return { ipa: ipaMatch ? ipaMatch[1].trim() : null };
+  } catch { return null; }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+init();
+
+// Keyboard: Escape closes
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") { closeCard(); closeQuiz(); }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Æsethien — Wortschatz</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--deep:#0e0a05;--bern:#C8860A;--moss:#4A7C6F;--bark:#6B5344;--cream:#F2F0EB;--green:#8BA888}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--deep);font-family:'DM Sans',sans-serif;color:var(--cream);min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;
+  background:radial-gradient(ellipse 70% 50% at 30% 40%, rgba(200,134,10,.08),transparent 60%),
+             radial-gradient(ellipse 50% 60% at 75% 65%, rgba(74,124,111,.07),transparent 60%), #0e0a05;
+}
+.header{text-align:center;margin-bottom:56px}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--moss);margin-bottom:12px}
+h1{font-family:'DM Serif Display',serif;font-size:52px;color:var(--cream);margin-bottom:8px}
+h1 span{color:var(--bern)}
+.subtitle{font-size:15px;color:rgba(242,240,235,.45);font-style:italic}
+.rooms{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;max-width:900px;width:100%}
+.room-card{
+  background:rgba(242,240,235,.04);border:1px solid rgba(242,240,235,.1);
+  border-radius:16px;padding:28px;cursor:pointer;text-decoration:none;color:inherit;
+  transition:.25s cubic-bezier(.34,1.56,.64,1);display:block;
+}
+.room-card:hover{background:rgba(200,134,10,.08);border-color:rgba(200,134,10,.3);transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.4)}
+.room-card.locked{opacity:.4;cursor:default;pointer-events:none}
+.room-card__session{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--bern);margin-bottom:8px}
+.room-card__name{font-family:'DM Serif Display',serif;font-size:26px;margin-bottom:6px}
+.room-card__desc{font-size:13px;color:rgba(242,240,235,.45);line-height:1.5;margin-bottom:16px}
+.room-card__count{font-size:12px;font-weight:600;color:var(--green)}
+.room-card__lock{font-size:12px;color:rgba(242,240,235,.3);margin-top:8px}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="eyebrow">Æsethien · Wortschatz</div>
+  <h1>Wähle einen <span>Raum</span></h1>
+  <div class="subtitle">Erkunde die Welt. Lerne die Sprache.</div>
+</div>
+<div class="rooms" id="rooms"></div>
+
+<script>
+const ROOMS = [
+  { id:"Markthalle",        name:"Die Markthalle",        session:3,  desc:"Lebensmittel, Mengen, Preise",                  count:12, locked:false },
+  { id:"Depot",             name:"Das Depot",             session:9,  desc:"Gegenstände, Werkzeuge, Möbel",                 count:8,  locked:false },
+  { id:"Kernarchiv",        name:"Das Kernarchiv",        session:5,  desc:"Dokumente, Zeit, Lesen",                        count:6,  locked:false },
+  { id:"Ankunftsbahnsteig", name:"Der Ankunftsbahnsteig", session:1,  desc:"Begrüßungen, Namen, Zahlen",                   count:0,  locked:true  },
+  { id:"Haengegaerten",     name:"Die Hängegärten",       session:7,  desc:"Natur, Farben, Richtungen",                    count:0,  locked:true  },
+  { id:"Ratssaal",          name:"Der Ratssaal",          session:11, desc:"Meinungen, Präferenzen, Diskussion",            count:0,  locked:true  },
+];
+
+const container = document.getElementById("rooms");
+ROOMS.forEach(r => {
+  const a = document.createElement("a");
+  a.className = "room-card" + (r.locked ? " locked" : "");
+  a.href = r.locked ? "#" : `room.html?room=${r.id}`;
+  a.innerHTML = `
+    <div class="room-card__session">Einheit ${r.session}</div>
+    <div class="room-card__name">${r.name}</div>
+    <div class="room-card__desc">${r.desc}</div>
+    ${r.locked
+      ? `<div class="room-card__lock">🔒 Noch nicht verfügbar</div>`
+      : `<div class="room-card__count">${r.count} Wörter · Jetzt erkunden →</div>`
+    }
+  `;
+  container.appendChild(a);
+});
+</script>
+</body>
+</html>
