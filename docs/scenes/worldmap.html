@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Æsethien — Die Karte</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --deep:#0e0a05; --deep2:#1a1208; --deep3:#111a13;
+  --bern:#C8860A; --bern2:#F0A820; --bern3:#7a4f06;
+  --moss:#4A7C6F; --moss2:#6aab9b; --moss3:#2d4f47;
+  --bark:#6B5344; --bark2:#9a7a68;
+  --cream:#F2F0EB; --cream2:#e8e4dc;
+  --green:#8BA888; --green2:#b8d4b5;
+  --r:10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  min-height:100vh;
+  background:var(--deep);
+  font-family:'DM Sans',sans-serif;
+  color:var(--cream);
+  overflow-x:hidden;
+}
+
+/* ── Atmospheric background ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 20%, rgba(200,134,10,.07) 0%,transparent 55%),
+    radial-gradient(ellipse 60% 70% at 85% 80%, rgba(74,124,111,.08) 0%,transparent 55%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(139,168,136,.04) 0%,transparent 60%);
+  pointer-events:none;
+}
+
+/* ── TOP HEADER ── */
+.header{
+  position:relative;z-index:10;
+  padding:32px 48px 0;
+  display:flex;align-items:flex-start;justify-content:space-between;
+}
+.header__left{}
+.header__eyebrow{
+  font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--moss2);margin-bottom:8px;
+}
+.header__title{
+  font-family:'DM Serif Display',serif;
+  font-size:48px;line-height:.95;
+  color:var(--cream);
+  margin-bottom:6px;
+}
+.header__title em{color:var(--bern);font-style:italic}
+.header__subtitle{
+  font-size:14px;color:rgba(242,240,235,.4);
+  font-style:italic;max-width:320px;line-height:1.5;
+}
+.header__right{
+  display:flex;flex-direction:column;align-items:flex-end;gap:12px;
+  padding-top:4px;
+}
+.progress-ring-wrap{
+  display:flex;align-items:center;gap:14px;
+}
+.progress-ring-label{text-align:right}
+.progress-ring-label__num{
+  font-family:'DM Serif Display',serif;font-size:28px;color:var(--bern);
+}
+.progress-ring-label__sub{font-size:11px;color:rgba(242,240,235,.4);letter-spacing:.05em}
+.cohort-badge{
+  padding:6px 14px;border-radius:20px;
+  background:rgba(74,124,111,.15);border:1px solid rgba(74,124,111,.3);
+  font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--moss2);
+  text-transform:uppercase;
+}
+
+/* ── MAP CONTAINER ── */
+.map-wrap{
+  position:relative;z-index:10;
+  padding:32px 48px 48px;
+}
+
+/* ── CONNECTOR PATHS ── */
+.connectors{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  pointer-events:none;z-index:1;
+}
+
+/* ── DISTRICT GRID ── */
+.districts{
+  position:relative;z-index:2;
+  display:grid;
+  grid-template-columns: 1fr 1.2fr 1fr;
+  grid-template-rows: auto auto auto auto;
+  gap:16px;
+  max-width:1100px;
+  margin:0 auto;
+}
+
+/* ── DISTRICT CARD ── */
+.district{
+  position:relative;
+  border-radius:18px;
+  border:1px solid rgba(242,240,235,.08);
+  background:rgba(242,240,235,.03);
+  padding:24px;
+  cursor:pointer;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  overflow:hidden;
+  min-height:160px;
+  display:flex;flex-direction:column;justify-content:space-between;
+}
+.district::before{
+  content:'';position:absolute;inset:0;border-radius:18px;
+  background:linear-gradient(135deg,rgba(255,255,255,.03) 0%,transparent 60%);
+  pointer-events:none;
+}
+.district:hover:not(.locked){
+  transform:translateY(-4px);
+  border-color:rgba(200,134,10,.3);
+  background:rgba(200,134,10,.06);
+  box-shadow:0 20px 60px rgba(0,0,0,.4), 0 0 0 1px rgba(200,134,10,.15);
+}
+.district.active{
+  border-color:rgba(200,134,10,.5);
+  background:rgba(200,134,10,.08);
+  box-shadow:0 0 40px rgba(200,134,10,.12);
+}
+.district.completed{
+  border-color:rgba(74,124,111,.35);
+  background:rgba(74,124,111,.06);
+}
+.district.completed:hover{
+  border-color:rgba(74,124,111,.5);
+  background:rgba(74,124,111,.1);
+  box-shadow:0 20px 60px rgba(0,0,0,.4), 0 0 0 1px rgba(74,124,111,.2);
+}
+.district.locked{
+  opacity:.45;cursor:default;
+}
+.district.locked::after{
+  content:'';position:absolute;inset:0;border-radius:18px;
+  background:rgba(14,10,5,.3);
+  backdrop-filter:blur(1px);
+}
+
+/* District grid placements */
+.d-ankunft  { grid-column:2; grid-row:1; }
+.d-market   { grid-column:1; grid-row:2; }
+.d-zahlen   { grid-column:2; grid-row:2; }
+.d-wohnviert{ grid-column:3; grid-row:2; }
+.d-bruecken { grid-column:1; grid-row:3; }
+.d-uhrturm  { grid-column:2; grid-row:3; }
+.d-gaerten  { grid-column:3; grid-row:3; }
+.d-archiv   { grid-column:1; grid-row:4; }
+.d-versamml { grid-column:2; grid-row:4; }
+.d-aktion   { grid-column:3; grid-row:4; }
+.d-wetter   { grid-column:1; grid-row:5; }
+.d-ratssaal { grid-column:2; grid-row:5; }
+.d-linde    { grid-column:3; grid-row:5; }
+
+/* Spanning cards */
+.d-ankunft  { min-height:120px; }
+.d-linde    { min-height:160px; background:rgba(200,134,10,.04); border-color:rgba(200,134,10,.15); }
+
+/* District accent colours */
+.district[data-accent="bern"]::before { background:linear-gradient(135deg,rgba(200,134,10,.08) 0%,transparent 50%); }
+.district[data-accent="moss"]::before { background:linear-gradient(135deg,rgba(74,124,111,.08) 0%,transparent 50%); }
+.district[data-accent="bark"]::before { background:linear-gradient(135deg,rgba(107,83,68,.08) 0%,transparent 50%); }
+
+/* ── CARD CONTENTS ── */
+.district__scene{
+  font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--bern);margin-bottom:6px;
+}
+.district__name{
+  font-family:'DM Serif Display',serif;font-size:22px;color:var(--cream);
+  line-height:1.1;margin-bottom:4px;
+}
+.district__subtitle{
+  font-size:12px;color:rgba(242,240,235,.4);line-height:1.4;
+  font-style:italic;
+}
+.district__footer{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:16px;
+}
+.district__words{
+  font-size:11px;font-weight:600;letter-spacing:.06em;
+  color:var(--green);
+}
+.district__status{
+  display:flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:600;
+}
+.status-dot{width:8px;height:8px;border-radius:50%}
+.status-dot.active   {background:var(--bern);box-shadow:0 0 6px var(--bern)}
+.status-dot.completed{background:var(--moss)}
+.status-dot.locked   {background:rgba(242,240,235,.2)}
+.status-dot.available{background:var(--bern2);animation:pulse 2s ease-in-out infinite}
+
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(240,168,32,.4)}50%{box-shadow:0 0 0 6px rgba(240,168,32,0)}}
+
+.district__lock{
+  position:absolute;top:16px;right:16px;z-index:3;
+  width:28px;height:28px;border-radius:50%;
+  background:rgba(14,10,5,.6);border:1px solid rgba(242,240,235,.1);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;
+}
+.district__check{
+  position:absolute;top:16px;right:16px;
+  width:28px;height:28px;border-radius:50%;
+  background:rgba(74,124,111,.2);border:1px solid rgba(74,124,111,.4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:var(--moss2);
+}
+
+/* Score bar */
+.score-bar{
+  margin-top:10px;height:3px;border-radius:2px;
+  background:rgba(242,240,235,.08);overflow:hidden;
+}
+.score-bar__fill{height:100%;border-radius:2px;background:var(--moss);transition:.6s ease}
+
+/* ── LINDE (central tree) ── */
+.d-linde .district__name{
+  font-size:18px;color:var(--bern2);
+}
+.linde-icon{
+  font-size:32px;margin-bottom:8px;
+  animation:sway 6s ease-in-out infinite;
+  display:inline-block;
+}
+@keyframes sway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+
+/* ── PATH LINES ── */
+.path-svg{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;z-index:0;overflow:visible;
+}
+.path-line{
+  stroke:rgba(200,134,10,.12);stroke-width:1.5;
+  stroke-dasharray:4 6;fill:none;
+  animation:dash 20s linear infinite;
+}
+.path-line.active-path{stroke:rgba(200,134,10,.3);stroke-width:2}
+@keyframes dash{to{stroke-dashoffset:-200}}
+
+/* ── SCENE PANEL (slides in from right) ── */
+.scene-panel{
+  position:fixed;top:0;right:-480px;bottom:0;width:440px;
+  background:linear-gradient(160deg,#1e140a,#111a13);
+  border-left:1px solid rgba(200,134,10,.2);
+  z-index:200;
+  transition:.4s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;
+  box-shadow:-20px 0 60px rgba(0,0,0,.5);
+  overflow-y:auto;
+}
+.scene-panel.open{right:0}
+
+.panel__close{
+  position:absolute;top:16px;right:16px;
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(242,240,235,.08);border:1px solid rgba(242,240,235,.1);
+  color:var(--cream);font-size:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:.2s;z-index:10;
+}
+.panel__close:hover{background:rgba(242,240,235,.15)}
+
+.panel__hero{
+  height:200px;
+  background:linear-gradient(160deg,rgba(200,134,10,.15),rgba(74,124,111,.1));
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;position:relative;overflow:hidden;
+  font-size:72px;
+}
+.panel__hero-img{
+  width:100%;height:100%;object-fit:cover;opacity:.6;
+  position:absolute;inset:0;
+}
+.panel__hero-emoji{position:relative;z-index:1}
+
+.panel__body{padding:24px}
+.panel__session{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--bern);margin-bottom:6px}
+.panel__name{font-family:'DM Serif Display',serif;font-size:30px;margin-bottom:6px}
+.panel__desc{font-size:13px;color:rgba(242,240,235,.5);line-height:1.6;margin-bottom:20px;font-style:italic}
+
+.panel__words-preview{
+  display:flex;flex-wrap:wrap;gap:6px;margin-bottom:24px;
+}
+.word-chip{
+  padding:5px 11px;border-radius:20px;
+  background:rgba(242,240,235,.06);border:1px solid rgba(242,240,235,.1);
+  font-size:12px;color:var(--cream);
+}
+.word-chip .art{color:var(--bern);font-size:10px;margin-right:3px}
+
+.panel__actions{display:flex;flex-direction:column;gap:10px}
+.btn-primary{
+  padding:14px 24px;border-radius:var(--r);
+  background:var(--bern);color:white;border:none;
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+  cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-primary:hover{background:#a06a08;transform:translateY(-1px);box-shadow:0 8px 24px rgba(200,134,10,.3)}
+.btn-secondary{
+  padding:13px 24px;border-radius:var(--r);
+  background:transparent;color:var(--green);
+  border:1.5px solid rgba(139,168,136,.3);
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+  cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-secondary:hover{background:rgba(139,168,136,.08);border-color:rgba(139,168,136,.5)}
+
+.panel__score{
+  margin-top:20px;padding:16px;border-radius:12px;
+  background:rgba(74,124,111,.1);border:1px solid rgba(74,124,111,.2);
+}
+.panel__score-label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--moss2);margin-bottom:4px}
+.panel__score-num{font-family:'DM Serif Display',serif;font-size:36px;color:var(--bern2)}
+.panel__score-sub{font-size:12px;color:rgba(242,240,235,.4)}
+
+/* ── OVERLAY ── */
+.overlay{
+  position:fixed;inset:0;z-index:150;
+  background:rgba(14,10,5,.5);backdrop-filter:blur(3px);
+  opacity:0;pointer-events:none;transition:.3s;
+}
+.overlay.active{opacity:1;pointer-events:all}
+
+/* ── BOTTOM LEGEND ── */
+.legend{
+  position:relative;z-index:10;
+  display:flex;align-items:center;justify-content:center;gap:28px;
+  padding:0 48px 32px;
+}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(242,240,235,.4)}
+.legend-swatch{width:12px;height:12px;border-radius:3px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .header{padding:20px 20px 0;flex-direction:column;gap:16px}
+  .map-wrap{padding:20px}
+  .districts{grid-template-columns:1fr 1fr;gap:12px}
+  .d-ankunft{grid-column:1/3;grid-row:auto}
+  .d-linde  {grid-column:1/3;grid-row:auto}
+  .scene-panel{width:100%;right:-100%}
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header__left">
+    <div class="header__eyebrow">Æsethien · Karte der Distrikte</div>
+    <h1 class="header__title">Die <em>Welt</em><br>wartet.</h1>
+    <div class="header__subtitle">Schließe jeden Distrikt ab, um den nächsten zu öffnen.</div>
+  </div>
+  <div class="header__right">
+    <div class="cohort-badge" id="cohortBadge">Kohorte 1 · 2026</div>
+    <div class="progress-ring-wrap">
+      <div class="progress-ring-label">
+        <div class="progress-ring-label__num" id="progressNum">0/12</div>
+        <div class="progress-ring-label__sub">DISTRIKTE ABGESCHLOSSEN</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Map -->
+<div class="map-wrap">
+  <div class="districts" id="districts">
+
+    <!-- S01 Ankunftsbahnsteig — top centre, entry point -->
+    <div class="district d-ankunft" data-id="1" data-accent="bern" onclick="openPanel(1)">
+      <div>
+        <div class="district__scene">Einheit 01 · Einstieg</div>
+        <div class="district__name">Der Ankunftsbahnsteig</div>
+        <div class="district__subtitle">Wo die Reise beginnt</div>
+      </div>
+      <div class="district__footer">
+        <div class="district__words">10 Wörter</div>
+        <div class="district__status"><div class="status-dot available"></div><span style="color:var(--bern2);font-size:11px">Verfügbar</span></div>
+      </div>
+      <div class="score-bar"><div class="score-bar__fill" style="width:0%"></div></div>
+    </div>
+
+    <!-- S02 Markthalle -->
+    <div class="district d-market locked" data-id="2" data-accent="bern" onclick="openPanel(2)">
+      <div class="district__lock">🔒</div>
+      <div>
+        <div class="district__scene">Einheit 02 · Lebensmittel</div>
+        <div class="district__name">Die Markthalle</div>
+        <div class="district__subtitle">Essen, Mengen, Preise</div>
+      </div>
+      <div class="district__footer">
+        <div class="district__words">10 Wörter</div>
+        <div class="district__status"><div class="status-dot locked"></div><span style="color:rgba(242,240,235,.3);font-size:11px">Gesperrt</span></div>
+      </div>
+      <div class="score-bar"><div class="score-bar__fill" style="width:0%"></div></div>
+    </div>
+
+    <!-- S03 Zahlen & Preise -->
+    <div class="district d-zahlen locked" data-id="3" data-accent="bark" onclick="openPanel(3)">
+      <div class="district__lock">🔒</div>
+      <div>
+        <div class="district__scene">Einheit 03 · Zahlen</div>
+        <div class="district__name">Der Zählplatz</div>
+        <div class="district__subtitle">Zahlen, Preise, Währung</div>
+      </div>
+      <div class="district__footer">
+        <div class="district__words">10 Wörter</div>
+        <div class="district__status"><div class="status-dot locked"></div><span style="color:rgba(242,240,235,.3);font-size:11px">Gesperrt</span></div>
+      </div>
+      <div class="score-bar"><div class="score-bar__fill" style="width:0%"></div></div>
+    </div>
+
+    <!-- S04 Home -->
+    <div class="district d-wohnviert locked" data-id="4" data-accent="moss" onclick="openPanel(4)">
+      <div class="district__lock">🔒</div>
+      <div>
+        <div class="district__scene">Einheit 04 · Zuhause</div>
+        <div class="district__name">Das Wohnviertel</div>
+        <div class="district__subtitle">Haus, Möbel, Alltagsobjekte</div>
+      </div>
+      <div class="district__footer">
+        <div class="district__words">10 Wörter</div>
+        <div class="district__status"><div class="status-dot locked"></div><span style="color:rgba(242,240,235,.3);font-size:11px">Gesperrt</span></div>
+      </div>
+      <div class="score-bar"><div class="score-bar__fill" style="width:0%"></div></div>
+    </div>
+
+    <!-- S05 City -->
+    <div class="district d-bruecken locked" data-id="5" data-accent="moss" onclick="openPanel(5)">
+      <div class="district__lock">🔒</div>
+      <div>
+        <div class="district__scene">Einheit 05 · Stadt</div>
+        <div class="district__name">Die Brückenstadt</div>
+        <div class="district__subtitle">Straßen, Richtungen, Wege</div>
+      </div>
+      <div class="district__footer">
+        <div class="district__words">10 Wörter</div>
+        <div class="district__status"><div class="status-dot locked"></div><span style="color:rgba(242,240,235,.3);font-size:11px">Gesperrt</span></div>
+      </div>
+      <div class="score-bar"><div class="score-bar__fill" style="width:0%"></div></div>
+    </div>
+
+    <!-- S06 Time -->
+    <div class="district d-uhrturm locked" data-id="6" data-accent="bern" onclick="openPanel(6)">
+      <div class="district__lock">🔒</div>
+      <div>
+        <div class="district__scene">Einheit 06 · Zeit</div>
+        <div class="district__name">Der Uhrturm</div>
+        <div class="district__subtitle">Zeit, Wochentage, Alltag</div>
+      </div>
+      <div class="district__footer">
+        <div class="district__words">10 Wörter</div>
+        <div class="district__status"><div class="status-dot locked"></div><span style="color:rgba(242,240,235,.3);font-size:11px">Gesperrt</span></div>
+      </div>
+      <div class="score-bar"><div class="score-bar__fill" style="width:0%"></div></div>
+    </div>
+
+    <!-- S07 Colours -->
+    <div class="district d-gaerten locked" data-id="7" data-accent="moss" onclick="openPanel(7)">
+      <div class="district__lock">🔒</div>
+      <div>
+        <div class="district__scene">Einheit 07 · Farben</div>
+        <div class="district__name">Die Hängegärten</div>
+        <div class="district__subtitle">Farben, Formen, Beschreibungen</div>
+      </div>
+      <div class="district__footer">
+        <div class="district__words">10 Wörter</div>
+        <div class="district__status"><div class="status-dot locked"></div><span style="color:rgba(242,240,235,.3);font-size:11px">Gesperrt</span></div>
+      </div>
+      <div class="score-bar"><div class="score-bar__fill" style="width:0%"></div></div>
+    </div>
+
+    <!-- S08 Archive -->
+    <div class="district d-archiv locked" data-id="8" data-accent="bark" onclick="openPanel(8)">
+      <div class="district__lock">🔒</div>
+      <div>
+        <div class="district__scene">Einheit 08 · Archiv</div>
+        <div class="district__name">Das Kernarchiv</div>
+        <div class="district__subtitle">Objekte, Werkzeuge, Beschriftungen</div>
+      </div>
+      <div class="district__footer">
+        <div class="district__words">10 Wörter</div>
+        <div class="district__status"><div class="status-dot locked"></div><span style="color:rgba(242,240,235,.3);font-size:11px">Gesperrt</span></div>
+      </div>
+      <div class="score-bar"><div class="score-bar__fill" style="width:0%"></div></div>
+    </div>
+
+    <!-- S09 People -->
+    <div class="district d-versamml locked" data-id="9" data-accent="moss" onclick="openPanel(9)">
+      <div class="district__lock">🔒</div>
+      <div>
+        <div class="district__scene">Einheit 09 · Menschen</div>
+        <div class="district__name">Der Versammlungsplatz</div>
+        <div class="district__subtitle">Menschen, Beziehungen, Pronomen</div>
+      </div>
+      <div class="district__footer">
+        <div class="district__words">10 Wörter</div>
+        <div class="district__status"><div class="status-dot locked"></div><span style="color:rgba(242,240,235,.3);font-size:11px">Gesperrt</span></div>
+      </div>
+      <div class="score-bar"><div class="score-bar__fill" style="width:0%"></div></div>
+    </div>
+
+    <!-- S10 Verbs -->
+    <div class="district d-aktion locked" data-id="10" data-accent="bern" onclick="openPanel(10)">
+      <div class="district__lock">🔒</div>
+      <div>
+        <div class="district__scene">Einheit 10 · Verben</div>
+        <div class="district__name">Die Aktionshalle</div>
+        <div class="district__subtitle">Verben in Aktion — essen, gehen, sein</div>
+      </div>
+      <div class="district__footer">
+        <div class="district__words">10 Wörter</div>
+        <div class="district__status"><div class="status-dot locked"></div><span style="color:rgba(242,240,235,.3);font-size:11px">Gesperrt</span></div>
+      </div>
+      <div class="score-bar"><div class="score-bar__fill" style="width:0%"></div></div>
+    </div>
+
+    <!-- S11 Weather -->
+    <div class="district d-wetter locked" data-id="11" data-accent="moss" onclick="openPanel(11)">
+      <div class="district__lock">🔒</div>
+      <div>
+        <div class="district__scene">Einheit 11 · Wetter</div>
+        <div class="district__name">Die Wetterstation</div>
+        <div class="district__subtitle">Wetter, Natur, die Elemente</div>
+      </div>
+      <div class="district__footer">
+        <div class="district__words">10 Wörter</div>
+        <div class="district__status"><div class="status-dot locked"></div><span style="color:rgba(242,240,235,.3);font-size:11px">Gesperrt</span></div>
+      </div>
+      <div class="score-bar"><div class="score-bar__fill" style="width:0%"></div></div>
+    </div>
+
+    <!-- S12 Finale — Ratssaal -->
+    <div class="district d-ratssaal locked" data-id="12" onclick="openPanel(12)">
+      <div class="district__lock">🔒</div>
+      <div>
+        <div class="district__scene">Einheit 12 · Debrief</div>
+        <div class="district__name">Der Ratssaal</div>
+        <div class="district__subtitle">Meinungen, Debatte, Präsentation</div>
+      </div>
+      <div class="district__footer">
+        <div class="district__words">10 Wörter</div>
+        <div class="district__status"><div class="status-dot locked"></div><span style="color:rgba(242,240,235,.3);font-size:11px">Gesperrt</span></div>
+      </div>
+      <div class="score-bar"><div class="score-bar__fill" style="width:0%"></div></div>
+    </div>
+
+
+
+
+  </div>
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-swatch" style="background:rgba(240,168,32,.5)"></div>Verfügbar</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:rgba(74,124,111,.5)"></div>Abgeschlossen</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:rgba(242,240,235,.1)"></div>Gesperrt</div>
+</div>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay" onclick="closePanel()"></div>
+
+<!-- Slide-in Scene Panel -->
+<div class="scene-panel" id="scenePanel">
+  <button class="panel__close" onclick="closePanel()">×</button>
+  <div class="panel__hero" id="panelHero">
+    <span class="panel__hero-emoji" id="panelEmoji">🌿</span>
+  </div>
+  <div class="panel__body">
+    <div class="panel__session" id="panelSession">Einheit 01</div>
+    <div class="panel__name" id="panelName">Distrikt</div>
+    <div class="panel__desc" id="panelDesc">Beschreibung</div>
+    <div class="panel__words-preview" id="panelWords"></div>
+    <div class="panel__actions" id="panelActions"></div>
+    <div class="panel__score" id="panelScore" style="display:none">
+      <div class="panel__score-label">Dein bestes Ergebnis</div>
+      <div class="panel__score-num" id="panelScoreNum">—</div>
+      <div class="panel__score-sub" id="panelScoreSub"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── District data ─────────────────────────────────────────────────────────────
+const DISTRICTS = {
+  1:  { session:"Einheit 01", name:"Der Ankunftsbahnsteig", desc:"Begrüßungen, Namen und erste Worte. Hier beginnt jede Reise nach Æsethien.", emoji:"🚉", words:[{w:"Hallo",a:""},{w:"Danke",a:""},{w:"Bitte",a:""},{w:"Mann",a:"der"},{w:"Frau",a:"die"},{w:"Kind",a:"das"},{w:"Name",a:"der"},{w:"Ja",a:""},{w:"Nein",a:""},{w:"Tschüss",a:""}], sceneFile:"scene-01-greetings.png", unlocks:2 },
+  2:  { session:"Einheit 02", name:"Die Markthalle",         desc:"Lebensmittel, Mengen und Preise. Die Händlerinnen sprechen nur Deutsch.", emoji:"🏪", words:[{w:"Apfel",a:"der"},{w:"Brot",a:"das"},{w:"Milch",a:"die"},{w:"Käse",a:"der"},{w:"Ei",a:"das"},{w:"Karotte",a:"die"},{w:"Tomate",a:"die"},{w:"Fisch",a:"der"},{w:"Wasser",a:"das"},{w:"Zwiebel",a:"die"}], sceneFile:"scene-02-markthalle.png", unlocks:3 },
+  3:  { session:"Einheit 03", name:"Der Zählplatz",          desc:"Zahlen, Preise und Währung. Ohne Zahlen öffnet kein Terminal.", emoji:"🔢", words:[{w:"eins",a:""},{w:"zwei",a:""},{w:"drei",a:""},{w:"vier",a:""},{w:"fünf",a:""},{w:"zehn",a:""},{w:"Euro",a:"der"},{w:"Cent",a:"der"},{w:"Preis",a:"der"},{w:"kaufen",a:""}], sceneFile:"scene-03-numbers.png", unlocks:4 },
+  4:  { session:"Einheit 04", name:"Das Wohnviertel",        desc:"Haus, Möbel und Alltagsobjekte. Jedes Zimmer hat seinen deutschen Namen.", emoji:"🏠", words:[{w:"Haus",a:"das"},{w:"Zimmer",a:"das"},{w:"Tisch",a:"der"},{w:"Stuhl",a:"der"},{w:"Bett",a:"das"},{w:"Fenster",a:"das"},{w:"Tür",a:"die"},{w:"Lampe",a:"die"},{w:"Buch",a:"das"},{w:"Schlüssel",a:"der"}], sceneFile:"scene-04-home.png", unlocks:5 },
+  5:  { session:"Einheit 05", name:"Die Brückenstadt",       desc:"Straßen, Richtungen und Wege durch Æsethien. Links, rechts, geradeaus.", emoji:"🌉", words:[{w:"Straße",a:"die"},{w:"Baum",a:"der"},{w:"Brücke",a:"die"},{w:"Park",a:"der"},{w:"links",a:""},{w:"rechts",a:""},{w:"geradeaus",a:""},{w:"nah",a:""},{w:"weit",a:""},{w:"Schild",a:"das"}], sceneFile:"scene-05-city.png", unlocks:6 },
+  6:  { session:"Einheit 06", name:"Der Uhrturm",            desc:"Zeit, Wochentage und der Rhythmus des Tages in Æsethien.", emoji:"🕐", words:[{w:"Uhr",a:"die"},{w:"Montag",a:"der"},{w:"Dienstag",a:"der"},{w:"Morgen",a:"der"},{w:"Abend",a:"der"},{w:"Nacht",a:"die"},{w:"heute",a:""},{w:"morgen",a:""},{w:"jetzt",a:""},{w:"Mittwoch",a:"der"}], sceneFile:"scene-06-time.png", unlocks:7 },
+  7:  { session:"Einheit 07", name:"Die Hängegärten",        desc:"Farben, Größen und Beschreibungen. Die Gärten sprechen durch Farbe.", emoji:"🌺", words:[{w:"rot",a:""},{w:"blau",a:""},{w:"grün",a:""},{w:"gelb",a:""},{w:"weiß",a:""},{w:"schwarz",a:""},{w:"groß",a:""},{w:"klein",a:""},{w:"schön",a:""},{w:"Blume",a:"die"}], sceneFile:"scene-07-colours.png", unlocks:8 },
+  8:  { session:"Einheit 08", name:"Das Kernarchiv",         desc:"Objekte, Werkzeuge und das Innere des Archivs. Alles ist beschriftet.", emoji:"📚", words:[{w:"Stift",a:"der"},{w:"Papier",a:"das"},{w:"Karte",a:"die"},{w:"Tasche",a:"die"},{w:"Regal",a:"das"},{w:"Kiste",a:"die"},{w:"Hammer",a:"der"},{w:"Schere",a:"die"},{w:"Schloss",a:"das"},{w:"Lampe",a:"die"}], sceneFile:"scene-08-archive.png", unlocks:9 },
+  9:  { session:"Einheit 09", name:"Der Versammlungsplatz", desc:"Menschen, Beziehungen und Pronomen. Wer bist du in dieser Welt?", emoji:"👥", words:[{w:"Mutter",a:"die"},{w:"Vater",a:"der"},{w:"Freund",a:"der"},{w:"Familie",a:"die"},{w:"Lehrer",a:"der"},{w:"ich",a:""},{w:"du",a:""},{w:"wir",a:""},{w:"Freundin",a:"die"},{w:"Lehrerin",a:"die"}], sceneFile:"scene-09-people.png", unlocks:10 },
+  10: { session:"Einheit 10", name:"Die Aktionshalle",      desc:"Verben in Aktion. Essen, trinken, sprechen — alles auf Deutsch.", emoji:"⚡", words:[{w:"essen",a:""},{w:"trinken",a:""},{w:"schlafen",a:""},{w:"lesen",a:""},{w:"sprechen",a:""},{w:"gehen",a:""},{w:"kommen",a:""},{w:"haben",a:""},{w:"sein",a:""},{w:"wollen",a:""}], sceneFile:"scene-10-verbs.png", unlocks:11 },
+  11: { session:"Einheit 11", name:"Die Wetterstation",     desc:"Wetter, Natur und die Elemente. Æsethien hat sein eigenes Klima.", emoji:"🌤️", words:[{w:"Sonne",a:"die"},{w:"Regen",a:"der"},{w:"Wind",a:"der"},{w:"Wolke",a:"die"},{w:"warm",a:""},{w:"kalt",a:""},{w:"heiß",a:""},{w:"Schnee",a:"der"},{w:"Himmel",a:"der"},{w:"Erde",a:"die"}], sceneFile:"scene-11-weather.png", unlocks:12 },
+  12: { session:"Einheit 12 · Debrief", name:"Der Ratssaal", desc:"Meinungen, Präferenzen und Debatte. Die letzte Mission vor dem Finale.", emoji:"🏛️", words:[{w:"Mission",a:"die"},{w:"Aufgabe",a:"die"},{w:"Antwort",a:"die"},{w:"Frage",a:"die"},{w:"richtig",a:""},{w:"falsch",a:""},{w:"verstehen",a:""},{w:"fertig",a:""},{w:"zusammen",a:""},{w:"Welt",a:"die"}], sceneFile:"scene-12-ratssaal.png", unlocks:13 },
+  13: { session:"A1 Finale", name:"Die Linde der Stille", desc:"Du hast alle 12 Einheiten abgeschlossen. Die Linde erinnert sich an alles.", emoji:"🌳", words:[], sceneFile:"scene-13-linde.png", unlocks:null },
+};
+
+// ── State — stored in localStorage ───────────────────────────────────────────
+function getState() {
+  try { return JSON.parse(localStorage.getItem("aesethien_progress") || "{}"); }
+  catch { return {}; }
+}
+function setState(s) {
+  localStorage.setItem("aesethien_progress", JSON.stringify(s));
+}
+
+let state = getState();
+// Default: scene 1 unlocked
+if (!state.unlocked) state.unlocked = [1];
+if (!state.scores) state.scores = {};
+
+// ── Apply state to DOM ────────────────────────────────────────────────────────
+function applyState() {
+  const unlocked = new Set(state.unlocked || [1]);
+  const scores   = state.scores || {};
+  let completed  = 0;
+
+  document.querySelectorAll(".district[data-id]").forEach(el => {
+    const id = parseInt(el.dataset.id);
+    const score = scores[id];
+    const isUnlocked = unlocked.has(id);
+    const isCompleted = score !== undefined && score >= 0;
+
+    el.classList.toggle("locked", !isUnlocked);
+    el.classList.toggle("completed", isCompleted);
+    el.classList.toggle("active", isUnlocked && !isCompleted && id !== 12);
+
+    // Update lock/check icon
+    const lockEl  = el.querySelector(".district__lock");
+    const checkEl = el.querySelector(".district__check");
+    if (lockEl) lockEl.style.display = isUnlocked ? "none" : "flex";
+    if (checkEl) checkEl.style.display = isCompleted ? "flex" : "none";
+
+    // Status dot
+    const dot = el.querySelector(".status-dot");
+    const statusText = el.querySelector(".district__status span");
+    if (dot) {
+      dot.className = "status-dot " + (isCompleted ? "completed" : isUnlocked ? "available" : "locked");
+    }
+    if (statusText) {
+      statusText.textContent = isCompleted ? "Abgeschlossen" : isUnlocked ? "Bereit" : "Gesperrt";
+      statusText.style.color = isCompleted ? "var(--moss2)" : isUnlocked ? "var(--bern2)" : "rgba(242,240,235,.3)";
+    }
+
+    // Score bar
+    const bar = el.querySelector(".score-bar__fill");
+    if (bar && score !== undefined) {
+      bar.style.width = score + "%";
+      bar.style.background = score >= 80 ? "var(--moss)" : score >= 50 ? "var(--bern)" : "#c0392b";
+    }
+
+    if (isCompleted) completed++;
+  });
+
+  document.getElementById("progressNum").textContent = `${completed}/12`;
+}
+
+// ── Open panel ────────────────────────────────────────────────────────────────
+let activeId = null;
+function openPanel(id) {
+  const d = DISTRICTS[id];
+  if (!d) return;
+  const unlocked = new Set(state.unlocked || [1]);
+  const isUnlocked = unlocked.has(id);
+
+  activeId = id;
+
+  // Populate panel
+  document.getElementById("panelSession").textContent = d.session;
+  document.getElementById("panelName").textContent    = d.name;
+  document.getElementById("panelDesc").textContent    = d.desc;
+  document.getElementById("panelEmoji").textContent   = d.emoji;
+
+  // Hero image (if exists)
+  const heroEl = document.getElementById("panelHero");
+  heroEl.style.backgroundImage = `url('scenes/${d.sceneFile}')`;
+  heroEl.style.backgroundSize  = "cover";
+  heroEl.style.backgroundPosition = "center";
+
+  // Word chips
+  const wordsEl = document.getElementById("panelWords");
+  wordsEl.innerHTML = d.words.map(w =>
+    `<div class="word-chip"><span class="art">${w.a}</span>${w.w}</div>`
+  ).join("");
+
+  // Score
+  const scoreEl = document.getElementById("panelScore");
+  const score   = (state.scores || {})[id];
+  if (score !== undefined) {
+    scoreEl.style.display = "block";
+    document.getElementById("panelScoreNum").textContent = score + "%";
+    document.getElementById("panelScoreSub").textContent =
+      score >= 80 ? "Ausgezeichnet — bereit für die nächste Einheit" :
+      score >= 50 ? "Gut — noch etwas Übung und du schaffst es" :
+                    "Versuch es nochmal — du kommst weiter";
+  } else {
+    scoreEl.style.display = "none";
+  }
+
+  // Actions
+  const actionsEl = document.getElementById("panelActions");
+  if (!isUnlocked) {
+    actionsEl.innerHTML = `<div style="text-align:center;color:rgba(242,240,235,.3);font-size:13px;padding:12px">
+      🔒 Schließe die vorherige Einheit ab, um diesen Distrikt zu öffnen.
+    </div>`;
+  } else if (score !== undefined) {
+    actionsEl.innerHTML = `
+      <button class="btn-primary" onclick="goToScene(${id})">🔄 Nochmal üben</button>
+      <button class="btn-secondary" onclick="goToScene(${id}, 'test')">📝 Quiz wiederholen</button>
+    `;
+  } else {
+    actionsEl.innerHTML = `
+      <button class="btn-primary" onclick="goToScene(${id})">→ Distrikt betreten</button>
+      <button class="btn-secondary" onclick="goToScene(${id}, 'test')">Direkt zum Quiz</button>
+    `;
+  }
+
+  document.getElementById("scenePanel").classList.add("open");
+  document.getElementById("overlay").classList.add("active");
+}
+
+function closePanel() {
+  document.getElementById("scenePanel").classList.remove("open");
+  document.getElementById("overlay").classList.remove("active");
+  activeId = null;
+}
+
+function goToScene(id, mode = "study") {
+  const d = DISTRICTS[id];
+  // Build URL — links to the scene viewer with the scene id and mode
+  const url = `scene.html?scene=${id}&mode=${mode}`;
+  window.location.href = url;
+}
+
+// ── DEV: unlock scenes for testing ───────────────────────────────────────────
+// Remove this section in production
+function devUnlock(upTo) {
+  state.unlocked = Array.from({length: upTo}, (_, i) => i + 1);
+  setState(state);
+  applyState();
+}
+// Expose for console testing: devUnlock(5) to unlock first 5 scenes
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+applyState();
+document.addEventListener("keydown", e => { if (e.key === "Escape") closePanel(); });
+</script>
+</body>
+</html>
