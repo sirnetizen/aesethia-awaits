@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Æsethien — Szene</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --deep:#0e0a05;--deep2:#1a1208;--deep3:#111a13;
+  --bern:#C8860A;--bern2:#F0A820;
+  --moss:#4A7C6F;--moss2:#6aab9b;
+  --bark:#6B5344;--cream:#F2F0EB;
+  --green:#8BA888;--mid:#DDD9D3;
+  --r:10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--deep);font-family:'DM Sans',sans-serif;color:var(--cream);
+  min-height:100vh;overflow-x:hidden;}
+
+/* ── TOP BAR ── */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(14,10,5,.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(200,134,10,.15);
+  padding:10px 24px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+}
+.topbar__left{display:flex;align-items:center;gap:16px}
+.back-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:20px;
+  background:rgba(242,240,235,.06);border:1px solid rgba(242,240,235,.1);
+  color:rgba(242,240,235,.6);font-size:12px;font-weight:600;
+  text-decoration:none;transition:.2s;cursor:pointer;
+}
+.back-btn:hover{background:rgba(242,240,235,.1);color:var(--cream)}
+.topbar__scene{
+  font-family:'DM Serif Display',serif;font-size:17px;color:var(--cream);
+}
+.topbar__scene span{color:var(--bern)}
+.topbar__right{display:flex;align-items:center;gap:10px}
+
+/* Mode toggle */
+.mode-toggle{
+  display:flex;background:rgba(242,240,235,.06);
+  border:1px solid rgba(242,240,235,.1);border-radius:20px;padding:3px;
+}
+.mode-btn{
+  padding:5px 14px;border-radius:17px;border:none;
+  font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+  cursor:pointer;transition:.2s;color:rgba(242,240,235,.5);background:transparent;
+}
+.mode-btn.active{background:var(--bern);color:white;box-shadow:0 2px 8px rgba(200,134,10,.3)}
+
+.progress-pill{
+  padding:5px 14px;border-radius:20px;
+  background:rgba(74,124,111,.12);border:1px solid rgba(74,124,111,.25);
+  font-size:12px;font-weight:600;color:var(--moss2);
+}
+
+/* ── SCENE CONTAINER ── */
+.scene-wrap{
+  position:relative;margin-top:52px;
+  width:100%;min-height:calc(100vh - 52px);
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:0;
+}
+.scene-img-wrap{
+  position:relative;width:100%;
+  max-height:calc(100vh - 52px);overflow:hidden;
+}
+.scene-img{
+  width:100%;display:block;
+  max-height:calc(100vh - 52px);object-fit:cover;object-position:center;
+}
+.scene-placeholder{
+  width:100%;height:calc(100vh - 52px);
+  background:linear-gradient(160deg,#1e1408,#0d1510);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:12px;
+}
+.scene-placeholder__icon{font-size:64px;opacity:.3}
+.scene-placeholder__text{font-size:14px;color:rgba(242,240,235,.2);font-style:italic}
+
+/* ── HOTSPOT ── */
+.hotspot{
+  position:absolute;transform:translate(-50%,-50%);
+  cursor:pointer;z-index:10;
+}
+/* Study mode — always visible twinkling dot */
+.hotspot__dot{
+  width:22px;height:22px;border-radius:50%;
+  border:2px solid rgba(240,168,32,.7);
+  background:rgba(240,168,32,.15);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;transition:.25s;
+}
+.hotspot__dot::before{
+  content:'';position:absolute;inset:-5px;border-radius:50%;
+  border:1.5px solid rgba(240,168,32,.25);
+  animation:ripple 2.5s ease-out infinite;
+}
+.hotspot__dot::after{
+  content:'';position:absolute;inset:-10px;border-radius:50%;
+  border:1px solid rgba(240,168,32,.1);
+  animation:ripple 2.5s ease-out infinite .4s;
+}
+@keyframes ripple{
+  0%{transform:scale(.8);opacity:1}
+  100%{transform:scale(1.6);opacity:0}
+}
+.hotspot:hover .hotspot__dot{
+  background:rgba(240,168,32,.35);border-color:var(--bern2);
+  box-shadow:0 0 16px rgba(240,168,32,.4);
+}
+.hotspot.discovered .hotspot__dot{
+  border-color:rgba(139,168,136,.7);background:rgba(139,168,136,.15);
+}
+.hotspot.discovered .hotspot__dot::before{border-color:rgba(139,168,136,.2);animation:none}
+.hotspot.discovered .hotspot__dot::after{animation:none}
+
+/* Test mode — dots hidden until hovered */
+.mode-test .hotspot__dot{
+  border-color:rgba(242,240,235,.15);background:rgba(242,240,235,.04);
+}
+.mode-test .hotspot__dot::before,.mode-test .hotspot__dot::after{animation:none}
+.mode-test .hotspot:hover .hotspot__dot{
+  border-color:rgba(240,168,32,.6);background:rgba(240,168,32,.2);
+}
+.mode-test .hotspot.discovered .hotspot__dot{
+  border-color:rgba(139,168,136,.5);background:rgba(139,168,136,.1);
+}
+
+.hotspot__inner{width:8px;height:8px;border-radius:50%;background:var(--bern2);
+  animation:pulse-dot 2.5s ease-in-out infinite;}
+@keyframes pulse-dot{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.4);opacity:1}}
+.hotspot.discovered .hotspot__inner{background:var(--green);animation:none}
+
+/* ── WORD CARD (popup) ── */
+.card-overlay{
+  position:fixed;inset:0;z-index:200;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(14,10,5,.6);backdrop-filter:blur(6px);
+  opacity:0;pointer-events:none;transition:.25s;
+}
+.card-overlay.active{opacity:1;pointer-events:all}
+
+.word-card{
+  background:linear-gradient(145deg,#1e140a,#111a13);
+  border:1px solid rgba(200,134,10,.25);
+  border-radius:22px;padding:32px;
+  width:min(400px,88vw);
+  position:relative;
+  transform:translateY(12px) scale(.97);
+  transition:.3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 32px 80px rgba(0,0,0,.6);
+}
+.card-overlay.active .word-card{transform:translateY(0) scale(1)}
+
+.card__close{
+  position:absolute;top:14px;right:14px;
+  width:30px;height:30px;border-radius:50%;
+  background:rgba(242,240,235,.07);border:1px solid rgba(242,240,235,.1);
+  color:var(--cream);font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:.2s;
+}
+.card__close:hover{background:rgba(242,240,235,.14)}
+
+.card__article{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:20px;margin-bottom:10px;
+  font-size:12px;font-weight:700;letter-spacing:.06em;
+}
+.card__article.der{background:rgba(74,124,111,.2);border:1px solid rgba(74,124,111,.35);color:var(--moss2)}
+.card__article.die{background:rgba(200,134,10,.15);border:1px solid rgba(200,134,10,.3);color:var(--bern2)}
+.card__article.das{background:rgba(107,83,68,.2);border:1px solid rgba(107,83,68,.35);color:#C4A882}
+.card__article.none{background:rgba(242,240,235,.06);border:1px solid rgba(242,240,235,.1);color:rgba(242,240,235,.4)}
+
+.card__word{font-family:'DM Serif Display',serif;font-size:44px;line-height:1;margin-bottom:4px}
+.card__plural{font-size:13px;color:rgba(242,240,235,.4);margin-bottom:14px}
+.card__english{font-size:22px;color:var(--green);font-weight:500;margin-bottom:14px}
+
+.card__ipa{
+  display:inline-flex;align-items:center;gap:10px;
+  background:rgba(242,240,235,.05);border:1px solid rgba(242,240,235,.08);
+  border-radius:30px;padding:7px 14px;margin-bottom:20px;
+}
+.card__ipa-text{font-size:14px;color:rgba(242,240,235,.55);font-family:monospace}
+.audio-btn{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--bern);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:11px;transition:.2s;flex-shrink:0;
+}
+.audio-btn:hover{background:var(--bern2);transform:scale(1.1)}
+
+.card__loading{
+  text-align:center;padding:24px 0;
+  color:rgba(242,240,235,.3);font-size:13px;font-style:italic;
+}
+.card__loading-dot{display:inline-block;animation:ldot 1.2s ease-in-out infinite}
+.card__loading-dot:nth-child(2){animation-delay:.2s}
+.card__loading-dot:nth-child(3){animation-delay:.4s}
+@keyframes ldot{0%,80%,100%{opacity:.3}40%{opacity:1}}
+
+.card__divider{height:1px;background:rgba(242,240,235,.07);margin:0 0 16px}
+
+.card__legend{display:flex;gap:14px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:rgba(242,240,235,.35)}
+.legend-dot{width:7px;height:7px;border-radius:50%}
+
+.card__mark{
+  float:right;
+  padding:7px 16px;border-radius:var(--r);
+  background:rgba(74,124,111,.12);border:1px solid rgba(74,124,111,.25);
+  color:var(--green);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+  cursor:pointer;transition:.2s;
+}
+.card__mark:hover{background:rgba(74,124,111,.25)}
+.card__mark.marked{background:rgba(74,124,111,.25);border-color:var(--moss)}
+
+/* ── TEST MODE CARD ── */
+.test-card{
+  background:linear-gradient(145deg,#1e140a,#111a13);
+  border:1px solid rgba(200,134,10,.25);
+  border-radius:22px;padding:32px;
+  width:min(420px,88vw);
+  position:relative;
+  transform:translateY(12px) scale(.97);
+  transition:.3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 32px 80px rgba(0,0,0,.6);
+}
+.card-overlay.active .test-card{transform:translateY(0) scale(1)}
+
+.test-card__prompt{
+  font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--bern);margin-bottom:12px;
+}
+.test-card__question{
+  font-family:'DM Serif Display',serif;font-size:28px;margin-bottom:8px;
+}
+.test-card__hint{font-size:13px;color:rgba(242,240,235,.35);margin-bottom:22px;font-style:italic}
+
+.test-choices{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.test-choice{
+  padding:12px 14px;border-radius:10px;
+  background:rgba(242,240,235,.05);border:1.5px solid rgba(242,240,235,.1);
+  color:var(--cream);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;
+  cursor:pointer;transition:.2s;text-align:left;
+}
+.test-choice:hover:not(:disabled){background:rgba(200,134,10,.1);border-color:rgba(200,134,10,.3)}
+.test-choice.correct{background:rgba(74,124,111,.2);border-color:var(--moss);color:var(--moss2)}
+.test-choice.wrong{background:rgba(192,57,43,.12);border-color:rgba(192,57,43,.35);color:#e88}
+.test-choice:disabled{cursor:default}
+
+.test-card__feedback{
+  text-align:center;padding:12px;border-radius:10px;
+  font-size:14px;font-weight:600;margin-bottom:16px;display:none;
+}
+.test-card__feedback.correct{background:rgba(74,124,111,.12);color:var(--moss2)}
+.test-card__feedback.wrong{background:rgba(192,57,43,.08);color:#e88}
+
+/* ── SCORE SUMMARY ── */
+.score-panel{
+  position:fixed;inset:0;z-index:300;
+  background:rgba(14,10,5,.85);backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:.3s;
+}
+.score-panel.active{opacity:1;pointer-events:all}
+.score-box{
+  background:linear-gradient(145deg,#1e140a,#111a13);
+  border:1px solid rgba(200,134,10,.25);border-radius:24px;
+  padding:40px;width:min(440px,88vw);text-align:center;
+}
+.score-box__title{font-family:'DM Serif Display',serif;font-size:28px;margin-bottom:6px}
+.score-box__num{font-family:'DM Serif Display',serif;font-size:72px;color:var(--bern);line-height:1}
+.score-box__label{font-size:13px;color:rgba(242,240,235,.4);margin-bottom:8px}
+.score-box__msg{font-size:16px;color:var(--green);font-weight:500;margin-bottom:28px;line-height:1.5}
+.score-box__actions{display:flex;flex-direction:column;gap:10px}
+.btn-bern{padding:13px;border-radius:var(--r);background:var(--bern);color:white;
+  border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
+.btn-bern:hover{background:#a06a08}
+.btn-ghost{padding:12px;border-radius:var(--r);background:transparent;
+  color:rgba(242,240,235,.5);border:1.5px solid rgba(242,240,235,.12);
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
+.btn-ghost:hover{background:rgba(242,240,235,.06);color:var(--cream)}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar__left">
+    <a class="back-btn" href="worldmap.html">← Karte</a>
+    <div class="topbar__scene" id="topbarScene">Szene <span id="topbarName">—</span></div>
+  </div>
+  <div class="topbar__right">
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btnStudy" onclick="setMode('study')">Lernen</button>
+      <button class="mode-btn" id="btnTest"  onclick="setMode('test')">Quiz</button>
+    </div>
+    <div class="progress-pill" id="progressPill">0 / 0</div>
+  </div>
+</div>
+
+<!-- SCENE -->
+<div class="scene-wrap" id="sceneWrap">
+  <div class="scene-img-wrap" id="sceneImgWrap">
+    <div class="scene-placeholder" id="scenePlaceholder">
+      <div class="scene-placeholder__icon">🌿</div>
+      <div class="scene-placeholder__text">Szene wird geladen…</div>
+    </div>
+    <img class="scene-img" id="sceneImg" src="" alt="" style="display:none" onload="onImageLoad()">
+    <!-- hotspots injected here -->
+  </div>
+</div>
+
+<!-- STUDY CARD -->
+<div class="card-overlay" id="studyOverlay" onclick="closeCard(event)">
+  <div class="word-card" id="wordCard">
+    <button class="card__close" onclick="closeCard()">×</button>
+    <div id="cardContent">
+      <div class="card__loading">
+        <span class="card__loading-dot">●</span>
+        <span class="card__loading-dot">●</span>
+        <span class="card__loading-dot">●</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TEST CARD -->
+<div class="card-overlay" id="testOverlay" onclick="closeCard(event)">
+  <div class="test-card" id="testCard">
+    <button class="card__close" onclick="closeCard()">×</button>
+    <div id="testContent"></div>
+  </div>
+</div>
+
+<!-- SCORE PANEL -->
+<div class="score-panel" id="scorePanel">
+  <div class="score-box">
+    <div class="score-box__title">Quiz abgeschlossen</div>
+    <div class="score-box__num" id="scoreNum">—</div>
+    <div class="score-box__label">Richtige Antworten</div>
+    <div class="score-box__msg" id="scoreMsg"></div>
+    <div class="score-box__actions">
+      <button class="btn-bern" onclick="retryQuiz()">Nochmal versuchen</button>
+      <button class="btn-ghost" onclick="switchToStudy()">Zurück zum Lernen</button>
+      <button class="btn-ghost" onclick="goToMap()">← Zur Karte</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── URL params ────────────────────────────────────────────────────────────────
+const params    = new URLSearchParams(window.location.search);
+const sceneId   = parseInt(params.get("scene") || "1");
+const initMode  = params.get("mode") || "study";
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let sceneData      = null;
+let wikiCache      = {};
+let discovered     = new Set();
+let mode           = "study";
+let activeHotspot  = null;
+let testAnswers    = {};
+let testCorrect    = 0;
+
+// ── Load scene JSON ───────────────────────────────────────────────────────────
+async function loadScene() {
+  try {
+    const res = await fetch(`scenes/scene-${String(sceneId).padStart(2,"0")}*.json`)
+      .catch(() => null);
+
+    // Try exact filename patterns
+    const filenames = [
+      `scenes/scene-${String(sceneId).padStart(2,"0")}-ankunft.json`,
+      `scenes/scene-${String(sceneId).padStart(2,"0")}-markthalle.json`,
+      `scenes/scene-${String(sceneId).padStart(2,"0")}-zahlen.json`,
+      `scenes/scene-${String(sceneId).padStart(2,"0")}-wohnviertel.json`,
+      `scenes/scene-${String(sceneId).padStart(2,"0")}-bruecken.json`,
+      `scenes/scene-${String(sceneId).padStart(2,"0")}-uhrturm.json`,
+      `scenes/scene-${String(sceneId).padStart(2,"0")}-gaerten.json`,
+      `scenes/scene-${String(sceneId).padStart(2,"0")}-archiv.json`,
+      `scenes/scene-${String(sceneId).padStart(2,"0")}-versamml.json`,
+      `scenes/scene-${String(sceneId).padStart(2,"0")}-aktion.json`,
+      `scenes/scene-${String(sceneId).padStart(2,"0")}-wetter.json`,
+      `scenes/scene-${String(sceneId).padStart(2,"0")}-ratssaal.json`,
+    ];
+
+    let data = null;
+    for (const f of filenames) {
+      try {
+        const r = await fetch(f);
+        if (r.ok) { data = await r.json(); break; }
+      } catch {}
+    }
+
+    if (!data) throw new Error("Scene JSON not found");
+    sceneData = data;
+    initScene();
+  } catch(e) {
+    document.querySelector(".scene-placeholder__text").textContent =
+      "Szene nicht gefunden — JSON fehlt in docs/scenes/";
+  }
+}
+
+function initScene() {
+  document.getElementById("topbarName").textContent = sceneData.name;
+  document.title = `Æsethien — ${sceneData.name}`;
+
+  // Load image
+  const img = document.getElementById("sceneImg");
+  img.src = `scenes/${sceneData.image}`;
+  img.style.display = "block";
+  document.getElementById("scenePlaceholder").style.display = "none";
+
+  updateProgress();
+  setMode(initMode);
+}
+
+function onImageLoad() {
+  renderHotspots();
+}
+
+// ── Wiktionary ────────────────────────────────────────────────────────────────
+async function fetchWiki(word) {
+  if (wikiCache[word]) return wikiCache[word];
+  const result = { article:"", plural:"—", english:"", ipa:"", audio:"" };
+  try {
+    const url = `https://en.wiktionary.org/w/api.php?action=parse&page=${encodeURIComponent(word)}&prop=wikitext&format=json&origin=*`;
+    const r   = await fetch(url);
+    const json = await r.json();
+    const wt  = json?.parse?.wikitext?.["*"] || "";
+
+    const gm = wt.match(/\{\{de-noun\|([mfn])/);
+    if (gm) result.article = {m:"der",f:"die",n:"das"}[gm[1]] || "";
+
+    const pm = wt.match(/pl[123]?=([^|}\n]+)/);
+    if (pm) result.plural = pm[1].trim();
+
+    const em = wt.match(/^# ([^\n{[#]+)/m);
+    if (em) result.english = em[1].trim().replace(/\[\[|\]\]/g,"").split("|").pop().replace(/[.,;]$/,"");
+
+    const im = wt.match(/IPA[^|]*\|([^|}]+)/);
+    if (im) result.ipa = im[1].trim();
+
+    const am = wt.match(/audio\|de\|([^\|}\n]+\.ogg)/i);
+    if (am) result.audio = am[1].trim();
+
+  } catch {}
+  wikiCache[word] = result;
+  return result;
+}
+
+// ── Hotspots ──────────────────────────────────────────────────────────────────
+function renderHotspots() {
+  if (!sceneData) return;
+  document.querySelectorAll(".hotspot").forEach(h => h.remove());
+
+  const wrap = document.getElementById("sceneImgWrap");
+  sceneData.words.forEach((w, i) => {
+    if (w.x === null || w.y === null) return;
+    const div = document.createElement("div");
+    div.className = "hotspot" + (discovered.has(i) ? " discovered" : "");
+    div.style.left = w.x + "%";
+    div.style.top  = w.y + "%";
+    div.dataset.idx = i;
+    div.innerHTML = `<div class="hotspot__dot"><div class="hotspot__inner"></div></div>`;
+    div.onclick = () => handleHotspotClick(i);
+    wrap.appendChild(div);
+  });
+}
+
+function handleHotspotClick(idx) {
+  activeHotspot = idx;
+  if (mode === "study") openStudyCard(idx);
+  else openTestCard(idx);
+}
+
+// ── Study mode ────────────────────────────────────────────────────────────────
+async function openStudyCard(idx) {
+  const w = sceneData.words[idx];
+  const overlay = document.getElementById("studyOverlay");
+  const content = document.getElementById("cardContent");
+
+  // Show loading
+  content.innerHTML = `<div class="card__loading">
+    <span class="card__loading-dot">●</span>
+    <span class="card__loading-dot">●</span>
+    <span class="card__loading-dot">●</span>
+    <div style="margin-top:8px;font-size:11px">${w.word}</div>
+  </div>`;
+  overlay.classList.add("active");
+
+  const wiki = await fetchWiki(w.word);
+
+  const artClass = wiki.article ? wiki.article : "none";
+  const artLabel = wiki.article || "—";
+  const plural   = wiki.plural !== "—" ? `die ${wiki.plural}` : "kein Plural";
+
+  content.innerHTML = `
+    <div class="card__article ${artClass}">${artLabel}</div>
+    <div class="card__word">${w.word}</div>
+    <div class="card__plural">${plural}</div>
+    <div class="card__english">${wiki.english || "—"}</div>
+    ${wiki.ipa ? `
+    <div class="card__ipa">
+      <button class="audio-btn" onclick="playAudio('${w.word}','${wiki.audio}')">▶</button>
+      <span class="card__ipa-text">/${wiki.ipa}/</span>
+    </div>` : ""}
+    <div class="card__divider"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div class="card__legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#4A7C6F"></div>der (m)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#C8860A"></div>die (f)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#6B5344"></div>das (n)</div>
+      </div>
+      <button class="card__mark ${discovered.has(idx)?"marked":""}"
+        id="markBtn" onclick="markDiscovered(${idx})">
+        ${discovered.has(idx) ? "✓ Gelernt" : "Als gelernt markieren"}
+      </button>
+    </div>
+  `;
+}
+
+function playAudio(word, audioFile) {
+  const src = audioFile
+    ? `https://commons.wikimedia.org/wiki/Special:FilePath/${audioFile}`
+    : `https://commons.wikimedia.org/wiki/Special:FilePath/De-${word}.ogg`;
+  const audio = new Audio(src);
+  audio.play().catch(() => {
+    if ('speechSynthesis' in window) {
+      const u = new SpeechSynthesisUtterance(word);
+      u.lang = 'de-DE'; u.rate = 0.85;
+      speechSynthesis.speak(u);
+    }
+  });
+}
+
+function markDiscovered(idx) {
+  discovered.add(idx);
+  document.querySelector(`[data-idx="${idx}"]`)?.classList.add("discovered");
+  const btn = document.getElementById("markBtn");
+  if (btn) { btn.classList.add("marked"); btn.textContent = "✓ Gelernt"; }
+  updateProgress();
+}
+
+// ── Test mode ─────────────────────────────────────────────────────────────────
+async function openTestCard(idx) {
+  if (testAnswers[idx] !== undefined) { openStudyCard(idx); return; }
+
+  const w = sceneData.words[idx];
+  const overlay = document.getElementById("testOverlay");
+  const content = document.getElementById("testContent");
+
+  // Build choices — correct + 3 random wrong
+  const allWords = sceneData.words.map(x => x.word);
+  const wrongs   = allWords.filter(x => x !== w.word).sort(() => Math.random()-.5).slice(0,3);
+  const choices  = [w.word, ...wrongs].sort(() => Math.random()-.5);
+
+  content.innerHTML = `
+    <div class="test-card__prompt">Was siehst du hier?</div>
+    <div class="test-card__question">Welches Wort gehört zu diesem Punkt?</div>
+    <div class="test-card__hint">Schau auf das Bild — was befindet sich an diesem Ort?</div>
+    <div class="test-choices" id="testChoices">
+      ${choices.map(c => `
+        <button class="test-choice" onclick="answerTest(${idx},'${c}','${w.word}',this)">
+          ${c}
+        </button>
+      `).join("")}
+    </div>
+    <div class="test-card__feedback" id="testFeedback"></div>
+  `;
+  overlay.classList.add("active");
+}
+
+function answerTest(idx, chosen, correct, btn) {
+  const isCorrect = chosen === correct;
+  testAnswers[idx] = isCorrect;
+  if (isCorrect) testCorrect++;
+
+  // Disable all, highlight
+  document.querySelectorAll(".test-choice").forEach(b => {
+    b.disabled = true;
+    if (b.textContent.trim() === correct) b.classList.add("correct");
+    else if (b === btn && !isCorrect) b.classList.add("wrong");
+  });
+
+  const fb = document.getElementById("testFeedback");
+  fb.style.display = "block";
+  fb.className = "test-card__feedback " + (isCorrect ? "correct" : "wrong");
+  fb.textContent = isCorrect
+    ? "✓ Richtig! " + correct
+    : `✗ Nicht ganz — es ist: ${correct}`;
+
+  discovered.add(idx);
+  document.querySelector(`[data-idx="${idx}"]`)?.classList.add("discovered");
+  updateProgress();
+
+  // Auto-close after 1.5s, check if quiz complete
+  setTimeout(() => {
+    closeCard();
+    if (Object.keys(testAnswers).length === sceneData.words.length) {
+      setTimeout(showScore, 400);
+    }
+  }, 1500);
+}
+
+function showScore() {
+  const total   = sceneData.words.length;
+  const correct = Object.values(testAnswers).filter(Boolean).length;
+  const pct     = Math.round((correct / total) * 100);
+
+  document.getElementById("scoreNum").textContent  = `${correct}/${total}`;
+  document.getElementById("scoreMsg").textContent  =
+    pct >= 90 ? "Ausgezeichnet! Du kennst diese Wörter sehr gut." :
+    pct >= 70 ? "Gut gemacht! Noch ein bisschen Übung." :
+    pct >= 50 ? "Weiter so — jeder Versuch ist Fortschritt." :
+                "Kein Problem — versuch es nochmal. Du schaffst das!";
+
+  document.getElementById("scorePanel").classList.add("active");
+
+  // Save to localStorage for worldmap unlock
+  saveProgress(pct);
+}
+
+function saveProgress(pct) {
+  try {
+    const state = JSON.parse(localStorage.getItem("aesethien_progress") || "{}");
+    if (!state.scores) state.scores = {};
+    if (!state.unlocked) state.unlocked = [1];
+    state.scores[sceneId] = pct;
+    // Unlock next scene
+    if (pct >= 50 && sceneId < 12) {
+      const next = sceneId + 1;
+      if (!state.unlocked.includes(next)) state.unlocked.push(next);
+    }
+    localStorage.setItem("aesethien_progress", JSON.stringify(state));
+  } catch {}
+}
+
+// ── Mode switching ────────────────────────────────────────────────────────────
+function setMode(m) {
+  mode = m;
+  document.getElementById("btnStudy").classList.toggle("active", m === "study");
+  document.getElementById("btnTest").classList.toggle("active",  m === "test");
+  document.getElementById("sceneImgWrap").classList.toggle("mode-test", m === "test");
+  if (m === "test") { testAnswers = {}; testCorrect = 0; discovered.clear(); renderHotspots(); }
+  updateProgress();
+}
+
+function switchToStudy() {
+  document.getElementById("scorePanel").classList.remove("active");
+  setMode("study");
+}
+
+function retryQuiz() {
+  document.getElementById("scorePanel").classList.remove("active");
+  setMode("test");
+}
+
+function goToMap() { window.location.href = "worldmap.html"; }
+
+// ── UI helpers ────────────────────────────────────────────────────────────────
+function closeCard(e) {
+  if (e && e.target !== document.getElementById("studyOverlay") &&
+           e.target !== document.getElementById("testOverlay")) return;
+  document.getElementById("studyOverlay").classList.remove("active");
+  document.getElementById("testOverlay").classList.remove("active");
+}
+
+function updateProgress() {
+  if (!sceneData) return;
+  const total = sceneData.words.filter(w => w.x !== null).length;
+  const done  = discovered.size;
+  document.getElementById("progressPill").textContent =
+    mode === "test"
+      ? `${Object.keys(testAnswers).length} / ${total} beantwortet`
+      : `${done} / ${total} entdeckt`;
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadScene();
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeCard(); });
+</script>
+</body>
+</html>
