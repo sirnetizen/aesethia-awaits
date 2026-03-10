@@ -437,7 +437,7 @@ function buildRoom() {
     const artClass = { der:"art-der", die:"art-die", das:"art-das" }[w.article];
 
     const iconHtml = w.iconFile
-      ? `<img src="${BASE_URL}../icons/${w.iconFile}" alt="${w.word}" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span style="font-size:40px;display:none">${w.emoji}</span>`
+      ? `<img src="${BASE_URL}icons/${w.iconFile}" alt="${w.word}" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span style="font-size:40px;display:none">${w.emoji}</span>`
       : `<span style="font-size:40px">${w.emoji}</span>`;
 
     obj.innerHTML = `
@@ -467,11 +467,11 @@ function openCard(w) {
   const artClass = { der:"der", die:"die", das:"das" }[w.article];
 
   const iconHtml = w.iconFile
-    ? `<img src="${BASE_URL}../icons/${w.iconFile}" alt="${w.word}" style="width:60px;height:60px;filter:invert(1) opacity(.8)" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\\'font-size:54px\\'>${w.emoji}</span>')">`
+    ? `<img src="${BASE_URL}icons/${w.iconFile}" alt="${w.word}" style="width:60px;height:60px;filter:invert(1) opacity(.8)" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\\'font-size:54px\\'>${w.emoji}</span>')">`
     : `<span style="font-size:54px">${w.emoji}</span>`;
   document.getElementById("cardIcon").innerHTML = iconHtml;
   document.getElementById("cardWord").textContent    = w.word;
-  document.getElementById("cardPlural").textContent  = w.plural === "—" ? "kein Plural" : `Pl: ${w.plural}`;
+  document.getElementById("cardPlural").textContent  = w.plural === "—" ? "kein Plural" : `Pl: die ${w.plural}`;
   document.getElementById("cardEnglish").textContent = w.en;
   document.getElementById("cardIPA").textContent     = `/${w.ipa}/`;
 
@@ -482,7 +482,7 @@ function openCard(w) {
   const audioBtn = document.getElementById("audioBtn");
   if (w.audio) {
     audioBtn.disabled = false;
-    currentAudioUrl = `${BASE_URL}../audio/${w.audio}`;
+    currentAudioUrl = `${BASE_URL}audio/${w.audio}`;
   } else {
     audioBtn.disabled = false;
     currentAudioUrl = `https://commons.wikimedia.org/wiki/Special:FilePath/De-${w.word}.ogg`;
