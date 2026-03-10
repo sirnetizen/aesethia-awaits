@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Æsethien — Hotspot Placement Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --deep:#0e0a05;--bern:#C8860A;--bern2:#F0A820;
+  --moss:#4A7C6F;--bark:#6B5344;--cream:#F2F0EB;
+  --green:#8BA888;--mid:#DDD9D3;--white:#FFFFFF;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--deep);font-family:'DM Sans',sans-serif;color:var(--cream);
+  display:grid;grid-template-columns:320px 1fr;min-height:100vh;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  background:#1a1208;border-right:1px solid rgba(200,134,10,.2);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.sidebar__header{
+  padding:20px;border-bottom:1px solid rgba(242,240,235,.06);
+}
+.sidebar__title{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:2px}
+.sidebar__title span{color:var(--bern)}
+.sidebar__sub{font-size:11px;color:rgba(242,240,235,.4);line-height:1.5}
+
+.sidebar__section{padding:16px 20px;border-bottom:1px solid rgba(242,240,235,.06)}
+.sidebar__label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--bern);margin-bottom:10px}
+
+/* Scene selector */
+.scene-select{
+  width:100%;padding:9px 12px;border-radius:8px;
+  background:rgba(242,240,235,.06);border:1px solid rgba(242,240,235,.12);
+  color:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;
+  cursor:pointer;
+}
+.scene-select:focus{outline:none;border-color:rgba(200,134,10,.4)}
+
+/* Image drop zone */
+.drop-zone{
+  border:2px dashed rgba(200,134,10,.3);border-radius:10px;
+  padding:20px;text-align:center;cursor:pointer;transition:.2s;
+  background:rgba(242,240,235,.02);
+}
+.drop-zone:hover{border-color:rgba(200,134,10,.6);background:rgba(200,134,10,.04)}
+.drop-zone input{display:none}
+.drop-zone__icon{font-size:28px;margin-bottom:8px}
+.drop-zone__text{font-size:12px;color:rgba(242,240,235,.5);line-height:1.5}
+.drop-zone__text strong{color:var(--cream);display:block;margin-bottom:4px}
+
+/* Word list */
+.word-list{flex:1;overflow-y:auto;padding:0 20px 16px}
+.word-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 10px;border-radius:8px;margin-bottom:4px;
+  background:rgba(242,240,235,.03);border:1px solid rgba(242,240,235,.06);
+  cursor:pointer;transition:.15s;
+}
+.word-item:hover{background:rgba(200,134,10,.08);border-color:rgba(200,134,10,.2)}
+.word-item.active{background:rgba(200,134,10,.15);border-color:rgba(200,134,10,.4)}
+.word-item.placed{background:rgba(74,124,111,.1);border-color:rgba(74,124,111,.3)}
+.word-item.active.placed{background:rgba(74,124,111,.2);border-color:rgba(74,124,111,.5)}
+
+.word-item__left{display:flex;align-items:center;gap:8px}
+.word-item__num{
+  width:20px;height:20px;border-radius:50%;
+  background:rgba(242,240,235,.08);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:rgba(242,240,235,.5);
+  flex-shrink:0;
+}
+.word-item.active .word-item__num{background:var(--bern);color:white}
+.word-item.placed .word-item__num{background:var(--moss);color:white}
+.word-item__word{font-size:13px;font-weight:600}
+.word-item__coords{font-size:10px;color:var(--moss);font-family:monospace}
+.word-item__del{
+  width:20px;height:20px;border-radius:4px;border:none;
+  background:transparent;color:rgba(242,240,235,.2);
+  cursor:pointer;font-size:14px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  transition:.15s;
+}
+.word-item__del:hover{background:rgba(192,57,43,.2);color:#e88}
+
+/* Output */
+.sidebar__output{padding:16px 20px;border-top:1px solid rgba(242,240,235,.06)}
+.output-box{
+  width:100%;min-height:80px;padding:10px;border-radius:8px;
+  background:rgba(242,240,235,.04);border:1px solid rgba(242,240,235,.08);
+  color:var(--green);font-family:monospace;font-size:11px;
+  resize:none;line-height:1.6;
+}
+.btn-row{display:flex;gap:8px;margin-top:8px}
+.btn{
+  flex:1;padding:9px;border-radius:8px;border:none;
+  font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+  cursor:pointer;transition:.2s;
+}
+.btn-copy{background:var(--bern);color:white}
+.btn-copy:hover{background:#a06a08}
+.btn-clear{background:rgba(242,240,235,.08);color:rgba(242,240,235,.6);border:1px solid rgba(242,240,235,.1)}
+.btn-clear:hover{background:rgba(192,57,43,.15);color:#e88;border-color:rgba(192,57,43,.3)}
+
+/* ── CANVAS AREA ── */
+.canvas-area{
+  position:relative;overflow:hidden;background:#0a0806;
+  display:flex;align-items:center;justify-content:center;
+}
+.canvas-wrap{position:relative;display:inline-block;cursor:crosshair}
+.scene-img{display:block;max-width:100%;max-height:100vh;user-select:none}
+.canvas-empty{
+  text-align:center;color:rgba(242,240,235,.15);
+  pointer-events:none;
+}
+.canvas-empty__icon{font-size:64px;margin-bottom:16px}
+.canvas-empty__text{font-size:16px;font-style:italic}
+
+/* Hotspot markers */
+.hotspot{
+  position:absolute;transform:translate(-50%,-50%);
+  pointer-events:all;cursor:pointer;
+  z-index:10;
+}
+.hotspot__ring{
+  width:28px;height:28px;border-radius:50%;
+  border:2px solid var(--bern2);
+  background:rgba(240,168,32,.2);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;transition:.2s;
+  animation:twinkle 2s ease-in-out infinite;
+}
+.hotspot.active .hotspot__ring{
+  border-color:white;background:rgba(255,255,255,.3);
+  animation:none;transform:scale(1.2);
+}
+.hotspot.moss .hotspot__ring{border-color:var(--green);background:rgba(139,168,136,.2)}
+@keyframes twinkle{
+  0%,100%{box-shadow:0 0 0 0 rgba(240,168,32,.4),0 0 0 4px rgba(240,168,32,0)}
+  50%{box-shadow:0 0 0 4px rgba(240,168,32,.15),0 0 0 8px rgba(240,168,32,0)}
+}
+.hotspot__num{
+  font-size:10px;font-weight:700;color:var(--bern2);z-index:1;
+}
+.hotspot.active .hotspot__num{color:white}
+.hotspot.moss .hotspot__num{color:var(--green)}
+.hotspot__label{
+  position:absolute;left:50%;top:calc(100% + 4px);transform:translateX(-50%);
+  background:rgba(14,10,5,.9);border:1px solid rgba(200,134,10,.3);
+  border-radius:4px;padding:2px 7px;
+  font-size:10px;font-weight:600;color:var(--cream);
+  white-space:nowrap;pointer-events:none;
+}
+
+/* Instructions overlay */
+.instructions{
+  position:absolute;top:16px;left:50%;transform:translateX(-50%);
+  background:rgba(14,10,5,.8);backdrop-filter:blur(8px);
+  border:1px solid rgba(200,134,10,.2);border-radius:10px;
+  padding:10px 18px;font-size:12px;color:rgba(242,240,235,.6);
+  pointer-events:none;white-space:nowrap;
+}
+.instructions span{color:var(--bern2);font-weight:600}
+
+/* Zoom indicator */
+.zoom-indicator{
+  position:absolute;bottom:16px;right:16px;
+  background:rgba(14,10,5,.7);border:1px solid rgba(242,240,235,.1);
+  border-radius:6px;padding:6px 12px;font-size:11px;color:rgba(242,240,235,.4);
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar__header">
+    <div class="sidebar__title">Æ<span>sethien</span></div>
+    <div class="sidebar__sub">Hotspot Placement Tool<br>Click the image to place each word's marker</div>
+  </div>
+
+  <!-- Scene selector -->
+  <div class="sidebar__section">
+    <div class="sidebar__label">Scene</div>
+    <select class="scene-select" id="sceneSelect" onchange="loadScene()">
+      <option value="1">01 — Der Ankunftsbahnsteig</option>
+      <option value="2">02 — Die Markthalle</option>
+      <option value="3">03 — Der Zählplatz</option>
+      <option value="4">04 — Das Wohnviertel</option>
+      <option value="5">05 — Die Brückenstadt</option>
+      <option value="6">06 — Der Uhrturm</option>
+      <option value="7">07 — Die Hängegärten</option>
+      <option value="8">08 — Das Kernarchiv</option>
+      <option value="9">09 — Der Versammlungsplatz</option>
+      <option value="10">10 — Die Aktionshalle</option>
+      <option value="11">11 — Die Wetterstation</option>
+      <option value="12">12 — Der Ratssaal</option>
+    </select>
+  </div>
+
+  <!-- Image loader -->
+  <div class="sidebar__section">
+    <div class="sidebar__label">Image</div>
+    <div class="drop-zone" onclick="document.getElementById('imgInput').click()"
+         ondragover="e.preventDefault()" ondrop="handleDrop(event)">
+      <input type="file" id="imgInput" accept="image/*" onchange="loadImage(event)">
+      <div class="drop-zone__icon">🖼️</div>
+      <div class="drop-zone__text">
+        <strong id="imgName">No image loaded</strong>
+        Click to load or drag & drop your Gemini PNG here
+      </div>
+    </div>
+  </div>
+
+  <!-- Word list -->
+  <div class="sidebar__label" style="padding:12px 20px 4px">Words — click to select, then click image</div>
+  <div class="word-list" id="wordList"></div>
+
+  <!-- Output -->
+  <div class="sidebar__output">
+    <div class="sidebar__label">JSON Output — paste into scene data</div>
+    <textarea class="output-box" id="outputBox" readonly placeholder="Place hotspots, then click Enrich + Save..."></textarea>
+    <div class="btn-row">
+      <button class="btn btn-copy" id="enrichBtn" onclick="enrichAndSave()">💾 Save JSON</button>
+      <button class="btn btn-clear" onclick="clearAll()">Clear All</button>
+    </div>
+    <div id="enrichStatus" style="font-size:11px;color:rgba(242,240,235,.4);margin-top:6px;min-height:16px"></div>
+  </div>
+</div>
+
+<!-- CANVAS -->
+<div class="canvas-area" id="canvasArea">
+  <div class="canvas-empty" id="canvasEmpty">
+    <div class="canvas-empty__icon">🗺️</div>
+    <div class="canvas-empty__text">Load a Gemini image to begin placing hotspots</div>
+  </div>
+  <div class="canvas-wrap" id="canvasWrap" style="display:none" onclick="handleImageClick(event)">
+    <img class="scene-img" id="sceneImg" src="" alt="">
+    <!-- hotspots injected here -->
+  </div>
+  <div class="instructions" id="instructions" style="display:none">
+    <span id="activeWordLabel">Select a word</span> — then click the image to place its marker
+  </div>
+  <div class="zoom-indicator" id="zoomIndicator" style="display:none">Click image to place · Right-click marker to remove</div>
+</div>
+
+<script>
+// ── Scene word data ───────────────────────────────────────────────────────────
+const SCENES = {
+  1:  { name:"Der Ankunftsbahnsteig", file:"scene-01-ankunft.png",
+        words:["Hallo","Tschüss","Bitte","Danke","Ja","Nein","Mann","Frau","Kind","Name"] },
+  2:  { name:"Die Markthalle", file:"scene-02-markthalle.png",
+        words:["Apfel","Brot","Milch","Käse","Ei","Karotte","Tomate","Fisch","Wasser","Zwiebel"] },
+  3:  { name:"Der Zählplatz", file:"scene-03-zahlen.png",
+        words:["eins","zwei","drei","vier","fünf","zehn","Euro","Cent","Preis","kaufen"] },
+  4:  { name:"Das Wohnviertel", file:"scene-04-wohnviertel.png",
+        words:["Haus","Zimmer","Tisch","Stuhl","Bett","Fenster","Tür","Lampe","Buch","Schlüssel"] },
+  5:  { name:"Die Brückenstadt", file:"scene-05-bruecken.png",
+        words:["Straße","Baum","Brücke","Park","links","rechts","geradeaus","nah","weit","Schild"] },
+  6:  { name:"Der Uhrturm", file:"scene-06-uhrturm.png",
+        words:["Uhr","Montag","Dienstag","Mittwoch","Morgen","Abend","Nacht","heute","morgen","jetzt"] },
+  7:  { name:"Die Hängegärten", file:"scene-07-gaerten.png",
+        words:["rot","blau","grün","gelb","weiß","schwarz","groß","klein","schön","Blume"] },
+  8:  { name:"Das Kernarchiv", file:"scene-08-archiv.png",
+        words:["Stift","Papier","Karte","Tasche","Regal","Kiste","Hammer","Schere","Schloss","Lampe"] },
+  9:  { name:"Der Versammlungsplatz", file:"scene-09-versamml.png",
+        words:["Mutter","Vater","Freund","Freundin","Familie","Lehrer","Lehrerin","ich","du","wir"] },
+  10: { name:"Die Aktionshalle", file:"scene-10-aktion.png",
+        words:["essen","trinken","schlafen","lesen","sprechen","gehen","kommen","haben","sein","wollen"] },
+  11: { name:"Die Wetterstation", file:"scene-11-wetter.png",
+        words:["Sonne","Regen","Wind","Wolke","warm","kalt","heiß","Schnee","Himmel","Erde"] },
+  12: { name:"Der Ratssaal", file:"scene-12-ratssaal.png",
+        words:["Mission","Aufgabe","Antwort","Frage","richtig","falsch","verstehen","fertig","zusammen","Welt"] },
+};
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let currentScene = 1;
+let activeWordIdx = null;
+let placements = {};  // { sceneId: { wordIdx: {x, y} } }
+
+// ── Load scene ────────────────────────────────────────────────────────────────
+function loadScene() {
+  currentScene = parseInt(document.getElementById("sceneSelect").value);
+  activeWordIdx = null;
+  if (!placements[currentScene]) placements[currentScene] = {};
+  renderWordList();
+  renderHotspots();
+  updateOutput();
+}
+
+// ── Load image ────────────────────────────────────────────────────────────────
+function loadImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  setImage(file);
+}
+function handleDrop(e) {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith("image/")) setImage(file);
+}
+function setImage(file) {
+  const url = URL.createObjectURL(file);
+  document.getElementById("sceneImg").src = url;
+  document.getElementById("canvasWrap").style.display = "inline-block";
+  document.getElementById("canvasEmpty").style.display = "none";
+  document.getElementById("instructions").style.display = "block";
+  document.getElementById("zoomIndicator").style.display = "block";
+  document.getElementById("imgName").textContent = file.name;
+}
+
+// ── Render word list ──────────────────────────────────────────────────────────
+function renderWordList() {
+  const scene = SCENES[currentScene];
+  const placed = placements[currentScene] || {};
+  const list = document.getElementById("wordList");
+  list.innerHTML = "";
+
+  scene.words.forEach((word, i) => {
+    const isPlaced = placed[i] !== undefined;
+    const isActive = activeWordIdx === i;
+    const div = document.createElement("div");
+    div.className = "word-item" + (isActive?" active":"") + (isPlaced?" placed":"");
+    div.onclick = () => selectWord(i);
+
+    const coords = isPlaced ? `${placed[i].x}%, ${placed[i].y}%` : "not placed";
+
+    div.innerHTML = `
+      <div class="word-item__left">
+        <div class="word-item__num">${i+1}</div>
+        <div>
+          <div class="word-item__word">${word}</div>
+          <div class="word-item__coords">${coords}</div>
+        </div>
+      </div>
+      <button class="word-item__del" onclick="removePlacement(event,${i})" title="Remove">×</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function selectWord(idx) {
+  activeWordIdx = idx;
+  const scene = SCENES[currentScene];
+  document.getElementById("activeWordLabel").textContent =
+    `Placing: "${scene.words[idx]}" (${idx+1}/${scene.words.length})`;
+  renderWordList();
+}
+
+// ── Handle image click ────────────────────────────────────────────────────────
+function handleImageClick(e) {
+  if (activeWordIdx === null) {
+    // Auto-select next unplaced word
+    const placed = placements[currentScene] || {};
+    const scene = SCENES[currentScene];
+    for (let i = 0; i < scene.words.length; i++) {
+      if (placed[i] === undefined) { selectWord(i); break; }
+    }
+    if (activeWordIdx === null) return;
+  }
+
+  const img = document.getElementById("sceneImg");
+  const rect = img.getBoundingClientRect();
+  const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+  const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+
+  if (!placements[currentScene]) placements[currentScene] = {};
+  placements[currentScene][activeWordIdx] = { x, y };
+
+  // Auto-advance to next unplaced word
+  const scene = SCENES[currentScene];
+  let next = null;
+  for (let i = activeWordIdx + 1; i < scene.words.length; i++) {
+    if (!placements[currentScene][i]) { next = i; break; }
+  }
+  activeWordIdx = next;
+  if (next !== null) {
+    document.getElementById("activeWordLabel").textContent =
+      `Placing: "${scene.words[next]}" (${next+1}/${scene.words.length})`;
+  } else {
+    document.getElementById("activeWordLabel").textContent = "All words placed! ✓";
+  }
+
+  renderWordList();
+  renderHotspots();
+  updateOutput();
+}
+
+function removePlacement(e, idx) {
+  e.stopPropagation();
+  if (placements[currentScene]) delete placements[currentScene][idx];
+  renderWordList();
+  renderHotspots();
+  updateOutput();
+}
+
+function clearAll() {
+  placements[currentScene] = {};
+  activeWordIdx = null;
+  renderWordList();
+  renderHotspots();
+  updateOutput();
+}
+
+// ── Render hotspots on image ──────────────────────────────────────────────────
+function renderHotspots() {
+  const wrap = document.getElementById("canvasWrap");
+  wrap.querySelectorAll(".hotspot").forEach(h => h.remove());
+
+  const placed = placements[currentScene] || {};
+  const scene = SCENES[currentScene];
+
+  Object.entries(placed).forEach(([idx, pos]) => {
+    const i = parseInt(idx);
+    const isActive = activeWordIdx === i;
+    const div = document.createElement("div");
+    div.className = "hotspot" + (isActive?" active":" moss");
+    div.style.left = pos.x + "%";
+    div.style.top  = pos.y + "%";
+    div.title = scene.words[i];
+    div.innerHTML = `
+      <div class="hotspot__ring"><div class="hotspot__num">${i+1}</div></div>
+      <div class="hotspot__label">${scene.words[i]}</div>
+    `;
+    div.onclick = (e) => { e.stopPropagation(); selectWord(i); };
+    div.oncontextmenu = (e) => { e.preventDefault(); removePlacement(e, i); };
+    wrap.appendChild(div);
+  });
+}
+
+// ── Generate preview JSON ─────────────────────────────────────────────────────
+function updateOutput() {
+  const placed = placements[currentScene] || {};
+  const scene = SCENES[currentScene];
+  const allPlaced = scene.words.every((_, i) => placed[i] !== undefined);
+  const count = Object.keys(placed).length;
+  document.getElementById("outputBox").value =
+    `${count}/${scene.words.length} words placed` +
+    (allPlaced ? " — ready to save ✓" : " — place all words then click Save");
+  document.getElementById("enrichBtn").disabled = !allPlaced;
+  document.getElementById("enrichBtn").style.opacity = allPlaced ? "1" : "0.4";
+}
+
+// ── Build and download lean JSON (coords only, Wiktionary fetched live) ───────
+function enrichAndSave() {
+  const placed = placements[currentScene] || {};
+  const scene  = SCENES[currentScene];
+  const sceneId = String(currentScene).padStart(2,"0");
+  const filename = scene.file.replace(".png", ".json");
+
+  const output = {
+    id:    currentScene,
+    scene: sceneId,
+    name:  scene.name,
+    image: scene.file,
+    words: scene.words.map((word, i) => ({
+      id:   i + 1,
+      word: word,
+      x:    placed[i]?.x ?? null,
+      y:    placed[i]?.y ?? null,
+    }))
+  };
+
+  const json = JSON.stringify(output, null, 2);
+  document.getElementById("outputBox").value = json;
+
+  // Fix: append to body before clicking
+  const blob = new Blob([json], { type: "application/json" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  document.getElementById("enrichStatus").textContent =
+    `✓ Downloaded ${filename} — move to docs/scenes/ in your repo`;
+  document.getElementById("enrichBtn").textContent = "💾 Save JSON";
+  setTimeout(() => document.getElementById("enrichBtn").textContent = "💾 Save JSON", 2000);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadScene();
+</script>
+</body>
+</html>

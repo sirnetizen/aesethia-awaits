@@ -1,0 +1,68 @@
+{
+  "id": 1,
+  "scene": "01",
+  "name": "Der Ankunftsbahnsteig",
+  "image": "scene-01-ankunft.png",
+  "words": [
+    {
+      "id": 1,
+      "word": "Hallo",
+      "x": 74,
+      "y": 63
+    },
+    {
+      "id": 2,
+      "word": "Tschüss",
+      "x": 55,
+      "y": 59
+    },
+    {
+      "id": 3,
+      "word": "Bitte",
+      "x": 46,
+      "y": 57
+    },
+    {
+      "id": 4,
+      "word": "Danke",
+      "x": 64,
+      "y": 56
+    },
+    {
+      "id": 5,
+      "word": "Ja",
+      "x": 78,
+      "y": 49
+    },
+    {
+      "id": 6,
+      "word": "Nein",
+      "x": 38,
+      "y": 45
+    },
+    {
+      "id": 7,
+      "word": "Mann",
+      "x": 56,
+      "y": 67
+    },
+    {
+      "id": 8,
+      "word": "Frau",
+      "x": 33,
+      "y": 56
+    },
+    {
+      "id": 9,
+      "word": "Kind",
+      "x": 62,
+      "y": 80
+    },
+    {
+      "id": 10,
+      "word": "Name",
+      "x": 69,
+      "y": 31
+    }
+  ]
+}
