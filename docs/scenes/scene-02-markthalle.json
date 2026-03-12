@@ -1,0 +1,68 @@
+{
+  "id": 2,
+  "scene": "02",
+  "name": "Die Markthalle",
+  "image": "scene-02-markthalle.png",
+  "words": [
+    {
+      "id": 1,
+      "word": "Apfel",
+      "x": 7,
+      "y": 89
+    },
+    {
+      "id": 2,
+      "word": "Brot",
+      "x": 19,
+      "y": 85
+    },
+    {
+      "id": 3,
+      "word": "Milch",
+      "x": 27,
+      "y": 84
+    },
+    {
+      "id": 4,
+      "word": "Käse",
+      "x": 31,
+      "y": 74
+    },
+    {
+      "id": 5,
+      "word": "Ei",
+      "x": 48,
+      "y": 69
+    },
+    {
+      "id": 6,
+      "word": "Karotte",
+      "x": 68,
+      "y": 95
+    },
+    {
+      "id": 7,
+      "word": "Tomate",
+      "x": 72,
+      "y": 83
+    },
+    {
+      "id": 8,
+      "word": "Fisch",
+      "x": 74,
+      "y": 79
+    },
+    {
+      "id": 9,
+      "word": "Wasser",
+      "x": 81,
+      "y": 88
+    },
+    {
+      "id": 10,
+      "word": "Zwiebel",
+      "x": 91,
+      "y": 93
+    }
+  ]
+}

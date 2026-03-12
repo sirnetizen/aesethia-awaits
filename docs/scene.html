@@ -16,7 +16,7 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--deep);font-family:'DM Sans',sans-serif;color:var(--cream);
-  min-height:100vh;overflow-x:hidden;}
+  min-height:100vh;overflow:hidden;}
 
 /* ── TOP BAR ── */
 .topbar{
@@ -61,27 +61,211 @@ body{background:var(--deep);font-family:'DM Sans',sans-serif;color:var(--cream);
 
 /* ── SCENE CONTAINER ── */
 .scene-wrap{
-  position:relative;margin-top:52px;
-  width:100%;min-height:calc(100vh - 52px);
-  display:flex;align-items:flex-start;justify-content:center;
-  padding:0;
+  margin-top:52px;
+  width:100%;height:calc(100vh - 52px);
+  display:grid;
+  grid-template-columns:40% 1fr;
 }
+
+/* ── LEFT PANEL ── */
+.scene-panel{
+  background:linear-gradient(160deg,#1e140a,#111a13);
+  border-right:1px solid rgba(200,134,10,.15);
+  display:flex;flex-direction:column;
+  overflow:hidden;height:100%;
+  min-width:0;
+}
+.scene-panel__top{
+  padding:20px 20px 0;
+  border-bottom:1px solid rgba(242,240,235,.06);
+  flex-shrink:0;
+}
+.scene-panel__session{
+  font-size:10px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--bern);margin-bottom:4px;
+}
+.scene-panel__name{
+  font-family:'DM Serif Display',serif;font-size:22px;
+  margin-bottom:14px;line-height:1.1;
+}
+
+/* Card area — takes remaining space */
+.scene-panel__card{
+  flex:1;overflow-y:auto;padding:20px;
+  display:flex;flex-direction:column;
+}
+
+/* Empty state */
+.card-empty{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;gap:10px;
+  color:rgba(242,240,235,.2);
+}
+.card-empty__icon{font-size:40px;opacity:.4}
+.card-empty__text{font-size:13px;font-style:italic;line-height:1.5}
+
+/* Word list dots at bottom */
+.scene-panel__dots{
+  padding:14px 20px;border-top:1px solid rgba(242,240,235,.06);
+  display:flex;flex-wrap:wrap;gap:6px;flex-shrink:0;
+}
+.word-dot{
+  width:28px;height:28px;border-radius:50%;
+  background:rgba(242,240,235,.05);border:1.5px solid rgba(242,240,235,.1);
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:700;color:rgba(242,240,235,.3);
+  cursor:pointer;transition:.2s;
+}
+.word-dot:hover{border-color:rgba(200,134,10,.4);color:var(--bern)}
+.word-dot.discovered{background:rgba(74,124,111,.15);border-color:rgba(74,124,111,.4);color:var(--moss2)}
+.word-dot.active{background:rgba(200,134,10,.2);border-color:var(--bern);color:var(--bern2)}
+
+/* ── RIGHT IMAGE ── */
 .scene-img-wrap{
-  position:relative;width:100%;
-  max-height:calc(100vh - 52px);overflow:hidden;
+  position:relative;
+  height:calc(100vh - 52px);overflow:hidden;
+  background:#0a0806;
 }
 .scene-img{
-  width:100%;display:block;
-  max-height:calc(100vh - 52px);object-fit:cover;object-position:center;
+  width:100%;height:100%;
+  object-fit:contain;object-position:center;
+  display:block;
 }
 .scene-placeholder{
-  width:100%;height:calc(100vh - 52px);
+  width:100%;height:100%;
   background:linear-gradient(160deg,#1e1408,#0d1510);
   display:flex;align-items:center;justify-content:center;
   flex-direction:column;gap:12px;
 }
 .scene-placeholder__icon{font-size:64px;opacity:.3}
 .scene-placeholder__text{font-size:14px;color:rgba(242,240,235,.2);font-style:italic}
+
+/* ── INLINE WORD CARD (lives in left panel) ── */
+.word-card{
+  background:rgba(242,240,235,.03);
+  border:1px solid rgba(200,134,10,.2);
+  border-radius:16px;padding:22px;
+  animation:slideIn .25s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.card__article{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 11px;border-radius:20px;margin-bottom:8px;
+  font-size:11px;font-weight:700;letter-spacing:.06em;
+}
+.card__article.der{background:rgba(74,124,111,.2);border:1px solid rgba(74,124,111,.35);color:var(--moss2)}
+.card__article.die{background:rgba(200,134,10,.15);border:1px solid rgba(200,134,10,.3);color:var(--bern2)}
+.card__article.das{background:rgba(107,83,68,.2);border:1px solid rgba(107,83,68,.35);color:#C4A882}
+.card__article.none{background:rgba(242,240,235,.06);border:1px solid rgba(242,240,235,.1);color:rgba(242,240,235,.35)}
+
+.card__word{font-family:'DM Serif Display',serif;font-size:38px;line-height:1;margin-bottom:3px;word-break:break-word}
+.card__plural{font-size:12px;color:rgba(242,240,235,.38);margin-bottom:12px}
+.card__english{font-size:20px;color:var(--green);font-weight:500;margin-bottom:12px}
+
+.card__ipa{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(242,240,235,.04);border:1px solid rgba(242,240,235,.08);
+  border-radius:30px;padding:6px 12px;margin-bottom:16px;
+}
+.card__ipa-text{font-size:13px;color:rgba(242,240,235,.5);font-family:monospace}
+.audio-btn{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--bern);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:10px;transition:.2s;flex-shrink:0;
+}
+.audio-btn:hover{background:var(--bern2);transform:scale(1.1)}
+
+.card__divider{height:1px;background:rgba(242,240,235,.07);margin:12px 0}
+.card__legend{display:flex;gap:12px;margin-bottom:10px}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(242,240,235,.3)}
+.legend-dot{width:7px;height:7px;border-radius:50%}
+.card__mark{
+  width:100%;padding:9px;border-radius:8px;
+  background:rgba(74,124,111,.1);border:1px solid rgba(74,124,111,.2);
+  color:var(--green);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+  cursor:pointer;transition:.2s;
+}
+.card__mark:hover{background:rgba(74,124,111,.22)}
+.card__mark.marked{background:rgba(74,124,111,.22);border-color:var(--moss)}
+
+.card__loading{
+  text-align:center;padding:20px 0;
+  color:rgba(242,240,235,.3);font-size:13px;font-style:italic;
+}
+.card__loading-dot{display:inline-block;animation:ldot 1.2s ease-in-out infinite}
+.card__loading-dot:nth-child(2){animation-delay:.2s}
+.card__loading-dot:nth-child(3){animation-delay:.4s}
+@keyframes ldot{0%,80%,100%{opacity:.3}40%{opacity:1}}
+
+/* ── TEST CARD (also inline) ── */
+.test-card{
+  background:rgba(242,240,235,.03);
+  border:1px solid rgba(200,134,10,.2);
+  border-radius:16px;padding:22px;
+  animation:slideIn .25s cubic-bezier(.34,1.56,.64,1);
+}
+.test-card__prompt{
+  font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--bern);margin-bottom:8px;
+}
+.test-card__question{
+  font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:6px;
+}
+.test-card__hint{font-size:12px;color:rgba(242,240,235,.3);margin-bottom:18px;font-style:italic}
+
+.test-choices{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px}
+.test-choice{
+  padding:10px 12px;border-radius:9px;
+  background:rgba(242,240,235,.04);border:1.5px solid rgba(242,240,235,.1);
+  color:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
+  cursor:pointer;transition:.2s;text-align:left;
+}
+.test-choice:hover:not(:disabled){background:rgba(200,134,10,.1);border-color:rgba(200,134,10,.3)}
+.test-choice.correct{background:rgba(74,124,111,.2);border-color:var(--moss);color:var(--moss2)}
+.test-choice.wrong{background:rgba(192,57,43,.1);border-color:rgba(192,57,43,.3);color:#e88}
+.test-choice:disabled{cursor:default}
+
+.test-card__feedback{
+  text-align:center;padding:10px;border-radius:9px;
+  font-size:13px;font-weight:600;margin-bottom:10px;display:none;
+}
+.test-card__feedback.correct{background:rgba(74,124,111,.12);color:var(--moss2)}
+.test-card__feedback.wrong{background:rgba(192,57,43,.07);color:#e88}
+
+/* ── SCORE PANEL ── */
+.score-panel{
+  position:fixed;inset:0;z-index:300;
+  background:rgba(14,10,5,.85);backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:.3s;
+}
+.score-panel.active{opacity:1;pointer-events:all}
+.score-box{
+  background:linear-gradient(145deg,#1e140a,#111a13);
+  border:1px solid rgba(200,134,10,.25);border-radius:24px;
+  padding:40px;width:min(420px,88vw);text-align:center;
+}
+.score-box__title{font-family:'DM Serif Display',serif;font-size:26px;margin-bottom:6px}
+.score-box__num{font-family:'DM Serif Display',serif;font-size:68px;color:var(--bern);line-height:1}
+.score-box__label{font-size:12px;color:rgba(242,240,235,.4);margin-bottom:8px}
+.score-box__msg{font-size:15px;color:var(--green);font-weight:500;margin-bottom:24px;line-height:1.5}
+.score-box__actions{display:flex;flex-direction:column;gap:10px}
+.btn-bern{padding:13px;border-radius:var(--r);background:var(--bern);color:white;
+  border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
+.btn-bern:hover{background:#a06a08}
+.btn-ghost{padding:12px;border-radius:var(--r);background:transparent;
+  color:rgba(242,240,235,.5);border:1.5px solid rgba(242,240,235,.12);
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
+.btn-ghost:hover{background:rgba(242,240,235,.06);color:var(--cream)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .scene-wrap{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .scene-panel{height:auto;max-height:45vh}
+  .scene-img-wrap{height:55vw;min-height:220px}
+}
 
 /* ── HOTSPOT ── */
 .hotspot{
@@ -138,130 +322,7 @@ body{background:var(--deep);font-family:'DM Sans',sans-serif;color:var(--cream);
 .hotspot.discovered .hotspot__inner{background:var(--green);animation:none}
 
 /* ── WORD CARD (popup) ── */
-.card-overlay{
-  position:fixed;inset:0;z-index:200;
-  display:flex;align-items:center;justify-content:center;
-  background:rgba(14,10,5,.6);backdrop-filter:blur(6px);
-  opacity:0;pointer-events:none;transition:.25s;
-}
-.card-overlay.active{opacity:1;pointer-events:all}
-
-.word-card{
-  background:linear-gradient(145deg,#1e140a,#111a13);
-  border:1px solid rgba(200,134,10,.25);
-  border-radius:22px;padding:32px;
-  width:min(400px,88vw);
-  position:relative;
-  transform:translateY(12px) scale(.97);
-  transition:.3s cubic-bezier(.34,1.56,.64,1);
-  box-shadow:0 32px 80px rgba(0,0,0,.6);
-}
-.card-overlay.active .word-card{transform:translateY(0) scale(1)}
-
-.card__close{
-  position:absolute;top:14px;right:14px;
-  width:30px;height:30px;border-radius:50%;
-  background:rgba(242,240,235,.07);border:1px solid rgba(242,240,235,.1);
-  color:var(--cream);font-size:16px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:.2s;
-}
-.card__close:hover{background:rgba(242,240,235,.14)}
-
-.card__article{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:5px 12px;border-radius:20px;margin-bottom:10px;
-  font-size:12px;font-weight:700;letter-spacing:.06em;
-}
-.card__article.der{background:rgba(74,124,111,.2);border:1px solid rgba(74,124,111,.35);color:var(--moss2)}
-.card__article.die{background:rgba(200,134,10,.15);border:1px solid rgba(200,134,10,.3);color:var(--bern2)}
-.card__article.das{background:rgba(107,83,68,.2);border:1px solid rgba(107,83,68,.35);color:#C4A882}
-.card__article.none{background:rgba(242,240,235,.06);border:1px solid rgba(242,240,235,.1);color:rgba(242,240,235,.4)}
-
-.card__word{font-family:'DM Serif Display',serif;font-size:44px;line-height:1;margin-bottom:4px}
-.card__plural{font-size:13px;color:rgba(242,240,235,.4);margin-bottom:14px}
-.card__english{font-size:22px;color:var(--green);font-weight:500;margin-bottom:14px}
-
-.card__ipa{
-  display:inline-flex;align-items:center;gap:10px;
-  background:rgba(242,240,235,.05);border:1px solid rgba(242,240,235,.08);
-  border-radius:30px;padding:7px 14px;margin-bottom:20px;
-}
-.card__ipa-text{font-size:14px;color:rgba(242,240,235,.55);font-family:monospace}
-.audio-btn{
-  width:28px;height:28px;border-radius:50%;
-  background:var(--bern);border:none;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  color:white;font-size:11px;transition:.2s;flex-shrink:0;
-}
-.audio-btn:hover{background:var(--bern2);transform:scale(1.1)}
-
-.card__loading{
-  text-align:center;padding:24px 0;
-  color:rgba(242,240,235,.3);font-size:13px;font-style:italic;
-}
-.card__loading-dot{display:inline-block;animation:ldot 1.2s ease-in-out infinite}
-.card__loading-dot:nth-child(2){animation-delay:.2s}
-.card__loading-dot:nth-child(3){animation-delay:.4s}
-@keyframes ldot{0%,80%,100%{opacity:.3}40%{opacity:1}}
-
-.card__divider{height:1px;background:rgba(242,240,235,.07);margin:0 0 16px}
-
-.card__legend{display:flex;gap:14px}
-.legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:rgba(242,240,235,.35)}
-.legend-dot{width:7px;height:7px;border-radius:50%}
-
-.card__mark{
-  float:right;
-  padding:7px 16px;border-radius:var(--r);
-  background:rgba(74,124,111,.12);border:1px solid rgba(74,124,111,.25);
-  color:var(--green);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
-  cursor:pointer;transition:.2s;
-}
-.card__mark:hover{background:rgba(74,124,111,.25)}
-.card__mark.marked{background:rgba(74,124,111,.25);border-color:var(--moss)}
-
-/* ── TEST MODE CARD ── */
-.test-card{
-  background:linear-gradient(145deg,#1e140a,#111a13);
-  border:1px solid rgba(200,134,10,.25);
-  border-radius:22px;padding:32px;
-  width:min(420px,88vw);
-  position:relative;
-  transform:translateY(12px) scale(.97);
-  transition:.3s cubic-bezier(.34,1.56,.64,1);
-  box-shadow:0 32px 80px rgba(0,0,0,.6);
-}
-.card-overlay.active .test-card{transform:translateY(0) scale(1)}
-
-.test-card__prompt{
-  font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--bern);margin-bottom:12px;
-}
-.test-card__question{
-  font-family:'DM Serif Display',serif;font-size:28px;margin-bottom:8px;
-}
-.test-card__hint{font-size:13px;color:rgba(242,240,235,.35);margin-bottom:22px;font-style:italic}
-
-.test-choices{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
-.test-choice{
-  padding:12px 14px;border-radius:10px;
-  background:rgba(242,240,235,.05);border:1.5px solid rgba(242,240,235,.1);
-  color:var(--cream);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;
-  cursor:pointer;transition:.2s;text-align:left;
-}
-.test-choice:hover:not(:disabled){background:rgba(200,134,10,.1);border-color:rgba(200,134,10,.3)}
-.test-choice.correct{background:rgba(74,124,111,.2);border-color:var(--moss);color:var(--moss2)}
-.test-choice.wrong{background:rgba(192,57,43,.12);border-color:rgba(192,57,43,.35);color:#e88}
-.test-choice:disabled{cursor:default}
-
-.test-card__feedback{
-  text-align:center;padding:12px;border-radius:10px;
-  font-size:14px;font-weight:600;margin-bottom:16px;display:none;
-}
-.test-card__feedback.correct{background:rgba(74,124,111,.12);color:var(--moss2)}
-.test-card__feedback.wrong{background:rgba(192,57,43,.08);color:#e88}
-
-/* ── SCORE SUMMARY ── */
+/* ── SCORE PANEL ── */
 .score-panel{
   position:fixed;inset:0;z-index:300;
   background:rgba(14,10,5,.85);backdrop-filter:blur(10px);
@@ -299,14 +360,31 @@ body{background:var(--deep);font-family:'DM Sans',sans-serif;color:var(--cream);
   <div class="topbar__right">
     <div class="mode-toggle">
       <button class="mode-btn active" id="btnStudy" onclick="setMode('study')">Lernen</button>
-      <button class="mode-btn" id="btnTest"  onclick="setMode('test')">Quiz</button>
+      <button class="mode-btn"        id="btnTest"  onclick="setMode('test')">Quiz</button>
     </div>
     <div class="progress-pill" id="progressPill">0 / 0</div>
   </div>
 </div>
 
-<!-- SCENE -->
+<!-- MAIN LAYOUT -->
 <div class="scene-wrap" id="sceneWrap">
+
+  <!-- LEFT PANEL -->
+  <div class="scene-panel">
+    <div class="scene-panel__top">
+      <div class="scene-panel__session" id="panelSession">Einheit —</div>
+      <div class="scene-panel__name"    id="panelName">—</div>
+    </div>
+    <div class="scene-panel__card" id="cardArea">
+      <div class="card-empty">
+        <div class="card-empty__icon">✦</div>
+        <div class="card-empty__text">Klicke auf einen<br>leuchtenden Punkt im Bild</div>
+      </div>
+    </div>
+    <div class="scene-panel__dots" id="wordDots"></div>
+  </div>
+
+  <!-- RIGHT IMAGE -->
   <div class="scene-img-wrap" id="sceneImgWrap">
     <div class="scene-placeholder" id="scenePlaceholder">
       <div class="scene-placeholder__icon">🌿</div>
@@ -315,28 +393,7 @@ body{background:var(--deep);font-family:'DM Sans',sans-serif;color:var(--cream);
     <img class="scene-img" id="sceneImg" src="" alt="" style="display:none" onload="onImageLoad()">
     <!-- hotspots injected here -->
   </div>
-</div>
 
-<!-- STUDY CARD -->
-<div class="card-overlay" id="studyOverlay" onclick="closeCard(event)">
-  <div class="word-card" id="wordCard">
-    <button class="card__close" onclick="closeCard()">×</button>
-    <div id="cardContent">
-      <div class="card__loading">
-        <span class="card__loading-dot">●</span>
-        <span class="card__loading-dot">●</span>
-        <span class="card__loading-dot">●</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- TEST CARD -->
-<div class="card-overlay" id="testOverlay" onclick="closeCard(event)">
-  <div class="test-card" id="testCard">
-    <button class="card__close" onclick="closeCard()">×</button>
-    <div id="testContent"></div>
-  </div>
 </div>
 
 <!-- SCORE PANEL -->
@@ -347,7 +404,7 @@ body{background:var(--deep);font-family:'DM Sans',sans-serif;color:var(--cream);
     <div class="score-box__label">Richtige Antworten</div>
     <div class="score-box__msg" id="scoreMsg"></div>
     <div class="score-box__actions">
-      <button class="btn-bern" onclick="retryQuiz()">Nochmal versuchen</button>
+      <button class="btn-bern"  onclick="retryQuiz()">Nochmal versuchen</button>
       <button class="btn-ghost" onclick="switchToStudy()">Zurück zum Lernen</button>
       <button class="btn-ghost" onclick="goToMap()">← Zur Karte</button>
     </div>
@@ -409,15 +466,17 @@ async function loadScene() {
 }
 
 function initScene() {
-  document.getElementById("topbarName").textContent = sceneData.name;
+  document.getElementById("topbarName").textContent  = sceneData.name;
+  document.getElementById("panelSession").textContent = `Einheit ${String(sceneId).padStart(2,"0")}`;
+  document.getElementById("panelName").textContent    = sceneData.name;
   document.title = `Æsethien — ${sceneData.name}`;
 
-  // Load image
   const img = document.getElementById("sceneImg");
   img.src = `scenes/${sceneData.image}`;
   img.style.display = "block";
   document.getElementById("scenePlaceholder").style.display = "none";
 
+  renderWordDots();
   updateProgress();
   setMode(initMode);
 }
@@ -484,47 +543,42 @@ function handleHotspotClick(idx) {
 // ── Study mode ────────────────────────────────────────────────────────────────
 async function openStudyCard(idx) {
   const w = sceneData.words[idx];
-  const overlay = document.getElementById("studyOverlay");
-  const content = document.getElementById("cardContent");
+  const area = document.getElementById("cardArea");
 
-  // Show loading
-  content.innerHTML = `<div class="card__loading">
+  // Highlight active dot
+  document.querySelectorAll(".word-dot").forEach((d,i) => d.classList.toggle("active", i===idx));
+
+  area.innerHTML = `<div class="word-card"><div class="card__loading">
     <span class="card__loading-dot">●</span>
     <span class="card__loading-dot">●</span>
     <span class="card__loading-dot">●</span>
-    <div style="margin-top:8px;font-size:11px">${w.word}</div>
-  </div>`;
-  overlay.classList.add("active");
+    <div style="margin-top:8px;font-size:11px;color:rgba(242,240,235,.3)">${w.word}</div>
+  </div></div>`;
 
   const wiki = await fetchWiki(w.word);
+  const artClass = wiki.article || "none";
+  const plural   = wiki.plural && wiki.plural !== "—" ? `die ${wiki.plural}` : "kein Plural";
 
-  const artClass = wiki.article ? wiki.article : "none";
-  const artLabel = wiki.article || "—";
-  const plural   = wiki.plural !== "—" ? `die ${wiki.plural}` : "kein Plural";
-
-  content.innerHTML = `
-    <div class="card__article ${artClass}">${artLabel}</div>
+  area.innerHTML = `<div class="word-card">
+    <div class="card__article ${artClass}">${wiki.article || "—"}</div>
     <div class="card__word">${w.word}</div>
     <div class="card__plural">${plural}</div>
     <div class="card__english">${wiki.english || "—"}</div>
-    ${wiki.ipa ? `
-    <div class="card__ipa">
+    ${wiki.ipa ? `<div class="card__ipa">
       <button class="audio-btn" onclick="playAudio('${w.word}','${wiki.audio}')">▶</button>
       <span class="card__ipa-text">/${wiki.ipa}/</span>
     </div>` : ""}
     <div class="card__divider"></div>
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <div class="card__legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#4A7C6F"></div>der (m)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#C8860A"></div>die (f)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#6B5344"></div>das (n)</div>
-      </div>
-      <button class="card__mark ${discovered.has(idx)?"marked":""}"
-        id="markBtn" onclick="markDiscovered(${idx})">
-        ${discovered.has(idx) ? "✓ Gelernt" : "Als gelernt markieren"}
-      </button>
+    <div class="card__legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#4A7C6F"></div>der</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#C8860A"></div>die</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#6B5344"></div>das</div>
     </div>
-  `;
+    <button class="card__mark ${discovered.has(idx)?"marked":""}"
+      id="markBtn" onclick="markDiscovered(${idx})">
+      ${discovered.has(idx) ? "✓ Gelernt" : "Als gelernt markieren"}
+    </button>
+  </div>`;
 }
 
 function playAudio(word, audioFile) {
@@ -541,11 +595,25 @@ function playAudio(word, audioFile) {
   });
 }
 
+function renderWordDots() {
+  const dots = document.getElementById("wordDots");
+  dots.innerHTML = "";
+  sceneData.words.forEach((w, i) => {
+    const d = document.createElement("div");
+    d.className = "word-dot" + (discovered.has(i) ? " discovered" : "");
+    d.textContent = i + 1;
+    d.title = w.word;
+    d.onclick = () => handleHotspotClick(i);
+    dots.appendChild(d);
+  });
+}
+
 function markDiscovered(idx) {
   discovered.add(idx);
   document.querySelector(`[data-idx="${idx}"]`)?.classList.add("discovered");
   const btn = document.getElementById("markBtn");
   if (btn) { btn.classList.add("marked"); btn.textContent = "✓ Gelernt"; }
+  renderWordDots();
   updateProgress();
 }
 
@@ -553,37 +621,64 @@ function markDiscovered(idx) {
 async function openTestCard(idx) {
   if (testAnswers[idx] !== undefined) { openStudyCard(idx); return; }
 
-  const w = sceneData.words[idx];
-  const overlay = document.getElementById("testOverlay");
-  const content = document.getElementById("testContent");
+  const w    = sceneData.words[idx];
+  const area = document.getElementById("cardArea");
+  document.querySelectorAll(".word-dot").forEach((d,i) => d.classList.toggle("active", i===idx));
 
-  // Build choices — correct + 3 random wrong
-  const allWords = sceneData.words.map(x => x.word);
-  const wrongs   = allWords.filter(x => x !== w.word).sort(() => Math.random()-.5).slice(0,3);
-  const choices  = [w.word, ...wrongs].sort(() => Math.random()-.5);
+  // Fetch Wiktionary for English meaning
+  const wiki = await fetchWiki(w.word);
+  const english = wiki.english || "?";
 
-  content.innerHTML = `
-    <div class="test-card__prompt">Was siehst du hier?</div>
-    <div class="test-card__question">Welches Wort gehört zu diesem Punkt?</div>
-    <div class="test-card__hint">Schau auf das Bild — was befindet sich an diesem Ort?</div>
-    <div class="test-choices" id="testChoices">
+  // Alternate question type by index — even = EN shown, DE asked; odd = DE shown, EN asked
+  const askGerman = (idx % 2 === 0);
+
+  let prompt, question, correctAnswer, wrongPool, choiceDisplay;
+
+  if (askGerman) {
+    // Show English → ask for German word
+    prompt    = "Auf Deutsch?";
+    question  = english;
+    correctAnswer = w.word;
+    wrongPool = sceneData.words.filter((_,i) => i !== idx).map(x => x.word);
+    choiceDisplay = choices => choices; // show German words as choices
+  } else {
+    // Show German word → ask for English meaning
+    prompt    = "Was bedeutet das?";
+    question  = w.word;
+    correctAnswer = english;
+    // Build wrong English choices from cache or fallback labels
+    wrongPool = sceneData.words
+      .filter((_,i) => i !== idx)
+      .map(x => wikiCache[x.word]?.english || x.word)
+      .filter(e => e && e !== english);
+  }
+
+  const wrongs  = wrongPool.sort(() => Math.random()-.5).slice(0,3);
+  const choices = [correctAnswer, ...wrongs].sort(() => Math.random()-.5);
+
+  // Escape for inline onclick — handle apostrophes
+  const safeCorrect = correctAnswer.replace(/'/g, "\\'");
+
+  area.innerHTML = `<div class="test-card">
+    <div class="test-card__prompt">${prompt}</div>
+    <div class="test-card__question">${question}</div>
+    <div class="test-card__hint">${askGerman ? "Wähle das deutsche Wort" : "Wähle die englische Bedeutung"}</div>
+    <div class="test-choices">
       ${choices.map(c => `
-        <button class="test-choice" onclick="answerTest(${idx},'${c}','${w.word}',this)">
+        <button class="test-choice" onclick="answerTest(${idx}, this, '${safeCorrect}')">
           ${c}
-        </button>
-      `).join("")}
+        </button>`).join("")}
     </div>
     <div class="test-card__feedback" id="testFeedback"></div>
-  `;
-  overlay.classList.add("active");
+  </div>`;
 }
 
-function answerTest(idx, chosen, correct, btn) {
+function answerTest(idx, btn, correct) {
+  const chosen    = btn.textContent.trim();
   const isCorrect = chosen === correct;
   testAnswers[idx] = isCorrect;
   if (isCorrect) testCorrect++;
 
-  // Disable all, highlight
   document.querySelectorAll(".test-choice").forEach(b => {
     b.disabled = true;
     if (b.textContent.trim() === correct) b.classList.add("correct");
@@ -594,8 +689,8 @@ function answerTest(idx, chosen, correct, btn) {
   fb.style.display = "block";
   fb.className = "test-card__feedback " + (isCorrect ? "correct" : "wrong");
   fb.textContent = isCorrect
-    ? "✓ Richtig! " + correct
-    : `✗ Nicht ganz — es ist: ${correct}`;
+    ? "✓ Richtig!"
+    : `✗ Es ist: ${correct}`;
 
   discovered.add(idx);
   document.querySelector(`[data-idx="${idx}"]`)?.classList.add("discovered");
@@ -643,38 +738,43 @@ function saveProgress(pct) {
   } catch {}
 }
 
-// ── Mode switching ────────────────────────────────────────────────────────────
 function setMode(m) {
   mode = m;
   document.getElementById("btnStudy").classList.toggle("active", m === "study");
   document.getElementById("btnTest").classList.toggle("active",  m === "test");
   document.getElementById("sceneImgWrap").classList.toggle("mode-test", m === "test");
-  if (m === "test") { testAnswers = {}; testCorrect = 0; discovered.clear(); renderHotspots(); }
+  if (m === "test") {
+    testAnswers = {}; testCorrect = 0; discovered.clear();
+    renderHotspots(); renderWordDots();
+    document.getElementById("cardArea").innerHTML = `<div class="card-empty">
+      <div class="card-empty__icon">🎯</div>
+      <div class="card-empty__text">Klicke auf einen Punkt<br>und rate das Wort</div>
+    </div>`;
+  } else {
+    document.getElementById("cardArea").innerHTML = `<div class="card-empty">
+      <div class="card-empty__icon">✦</div>
+      <div class="card-empty__text">Klicke auf einen<br>leuchtenden Punkt im Bild</div>
+    </div>`;
+  }
   updateProgress();
+}
+
+function closeCard() {
+  // No-op in new layout — card lives in panel, just reset to empty
+  document.querySelectorAll(".word-dot").forEach(d => d.classList.remove("active"));
 }
 
 function switchToStudy() {
   document.getElementById("scorePanel").classList.remove("active");
   setMode("study");
 }
-
 function retryQuiz() {
   document.getElementById("scorePanel").classList.remove("active");
   setMode("test");
 }
-
 function goToMap() { window.location.href = "worldmap.html"; }
 
-// ── UI helpers ────────────────────────────────────────────────────────────────
-function closeCard(e) {
-  if (e && e.target !== document.getElementById("studyOverlay") &&
-           e.target !== document.getElementById("testOverlay")) return;
-  document.getElementById("studyOverlay").classList.remove("active");
-  document.getElementById("testOverlay").classList.remove("active");
-}
-
 function updateProgress() {
-  if (!sceneData) return;
   const total = sceneData.words.filter(w => w.x !== null).length;
   const done  = discovered.size;
   document.getElementById("progressPill").textContent =
